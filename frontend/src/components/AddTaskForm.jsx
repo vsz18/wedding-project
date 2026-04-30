@@ -5,12 +5,21 @@ const CATEGORIES = [
   'entertainment', 'attire', 'finance', 'personal', 'events',
 ]
 
+const WEDDING = new Date(2026, 4, 30)
+
+function dateStrToDueDay(str) {
+  if (!str) return null
+  const [y, m, day] = str.split('-').map(Number)
+  const d = new Date(y, m - 1, day)
+  return Math.round((WEDDING - d) / 86400000)
+}
+
 /** @param {{ onAdd: (task: object) => Promise<void> }} props */
 export function AddTaskForm({ onAdd }) {
   const [open, setOpen]       = useState(false)
   const [title, setTitle]     = useState('')
   const [category, setCategory] = useState('general')
-  const [dueDay, setDueDay]   = useState('')
+  const [dueDate, setDueDate] = useState('')
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState(null)
 
@@ -20,10 +29,10 @@ export function AddTaskForm({ onAdd }) {
     setSaving(true)
     setError(null)
     try {
-      await onAdd({ title: title.trim(), category, due_day: dueDay ? Number(dueDay) : null })
+      await onAdd({ title: title.trim(), category, due_day: dateStrToDueDay(dueDate) })
       setTitle('')
       setCategory('general')
-      setDueDay('')
+      setDueDate('')
       setOpen(false)
     } catch (err) {
       setError(err.message)
@@ -72,11 +81,11 @@ export function AddTaskForm({ onAdd }) {
           </select>
 
           <input
-            type="number" min={1} max={30}
-            placeholder="Due day (1–30)"
-            value={dueDay}
-            onChange={e => setDueDay(e.target.value)}
-            className="text-xs text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-700 rounded-md px-2 py-1.5 w-32 focus:outline-none focus:ring-2 focus:ring-taupe-600 border-none"
+            type="date"
+            value={dueDate}
+            min="2026-01-01" max="2026-05-30"
+            onChange={e => setDueDate(e.target.value)}
+            className="text-xs text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-700 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600 border-none"
           />
 
           <div className="ml-auto flex gap-2">

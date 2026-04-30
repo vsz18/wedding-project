@@ -7,13 +7,36 @@ const CATEGORIES = [
   'entertainment','attire','finance','personal','events',
 ]
 
+const WEDDING = new Date(2026, 4, 30) // May 30, 2026
+
+function dueDayToDateStr(dueDay) {
+  if (dueDay == null) return ''
+  const d = new Date(WEDDING)
+  d.setDate(d.getDate() - dueDay)
+  return d.toISOString().slice(0, 10)
+}
+
+function dateStrToDueDay(str) {
+  if (!str) return null
+  const [y, m, day] = str.split('-').map(Number)
+  const d = new Date(y, m - 1, day)
+  return Math.round((WEDDING - d) / 86400000)
+}
+
+function formatDueDate(dueDay) {
+  if (dueDay == null) return null
+  const d = new Date(WEDDING)
+  d.setDate(d.getDate() - dueDay)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 /** @param {{ task: object, onToggle: Function, onUpdate: Function, onDelete: Function }} */
 export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleDraft, setTitleDraft]     = useState(task.title)
   const [expanded, setExpanded]         = useState(false)
   const [categoryDraft, setCategoryDraft] = useState(task.category || 'general')
-  const [dueDayDraft, setDueDayDraft]   = useState(task.due_day ?? '')
+  const [dueDateDraft, setDueDateDraft] = useState(dueDayToDateStr(task.due_day))
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: task.id })
@@ -34,7 +57,7 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
   function handleMetaSave() {
     onUpdate(task, {
       category: categoryDraft,
-      due_day: dueDayDraft !== '' ? Number(dueDayDraft) : null,
+      due_day: dateStrToDueDay(dueDateDraft),
     })
     setExpanded(false)
   }
@@ -93,12 +116,12 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {task.due_day != null && !expanded && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-taupe-50 dark:bg-taupe-600/20 text-taupe-600 font-medium">
-              Day {task.due_day}
+              {formatDueDate(task.due_day)}
             </span>
           )}
 
           <button
-            onClick={() => { setExpanded(p => !p); setCategoryDraft(task.category || 'general'); setDueDayDraft(task.due_day ?? '') }}
+            onClick={() => { setExpanded(p => !p); setCategoryDraft(task.category || 'general'); setDueDateDraft(dueDayToDateStr(task.due_day)) }}
             aria-label="Edit details"
             className={`opacity-0 group-hover:opacity-100 transition-all ${expanded ? 'opacity-100 text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-stone-500 dark:hover:text-stone-400'}`}
           >
@@ -132,11 +155,11 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
           </select>
 
           <input
-            type="number" min={1} max={30}
-            placeholder="Due day"
-            value={dueDayDraft}
-            onChange={e => setDueDayDraft(e.target.value)}
-            className="w-24 text-xs bg-stone-100 dark:bg-stone-700 dark:text-stone-300 border-none rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600"
+            type="date"
+            value={dueDateDraft}
+            min="2026-01-01" max="2026-05-30"
+            onChange={e => setDueDateDraft(e.target.value)}
+            className="text-xs bg-stone-100 dark:bg-stone-700 dark:text-stone-300 border-none rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600"
           />
 
           <button onClick={handleMetaSave} className="text-xs bg-taupe-600 text-white px-3 py-1.5 rounded-md hover:bg-taupe-700 transition-colors">
