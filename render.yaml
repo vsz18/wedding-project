@@ -27,6 +27,7 @@ services:
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
     routes:
       - type: rewrite
         source: /*
@@ -34,5 +35,3 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://wedding-backend.onrender.com
-      - key: NODE_VERSION
-        value: 22
