@@ -38,28 +38,47 @@ function serializeAssignees(list) {
   return list.join(',')
 }
 
-function AssigneeChips({ raw }) {
+function chipColor(name) {
+  return MEMBER_ROLE_COLORS[name] || 'bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300'
+}
+
+/** Compact inline display: shows 1 name chip + tappable "+N" button */
+function AssigneeChips({ raw, onShowAll }) {
   const list = parseAssignees(raw)
   if (list.includes('all')) return (
     <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 dark:bg-stone-700 dark:text-stone-400 font-medium whitespace-nowrap">
       All
     </span>
   )
-  const show  = list.slice(0, 2)
-  const extra = list.length - 2
+  const extra = list.length - 1
   return (
     <div className="flex items-center gap-1">
-      {show.map(name => (
-        <span
-          key={name}
-          className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
-            MEMBER_ROLE_COLORS[name] || 'bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300'
-          }`}
+      <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${chipColor(list[0])}`}>
+        {list[0].split(' ')[0]}
+      </span>
+      {extra > 0 && (
+        <button
+          onClick={onShowAll}
+          className="text-xs px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 font-medium hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
         >
+          +{extra}
+        </button>
+      )}
+    </div>
+  )
+}
+
+/** Expanded row shown below the task when +N is tapped */
+function AssigneeAllChips({ raw, onCollapse }) {
+  const list = parseAssignees(raw).filter(a => a !== 'all')
+  return (
+    <div className="flex flex-wrap gap-1 items-center">
+      {list.map(name => (
+        <span key={name} className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${chipColor(name)}`}>
           {name.split(' ')[0]}
         </span>
       ))}
-      {extra > 0 && <span className="text-xs px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 font-medium">+{extra}</span>}
+      <button onClick={onCollapse} className="text-xs text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 ml-0.5">✕</button>
     </div>
   )
 }
@@ -241,11 +260,13 @@ function AddMakeupSlotRow({ onAdd }) {
 
 /* ─── Bridesmaids task item ──────────────────────────────── */
 function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
-  const [editingTitle, setEditingTitle]   = useState(false)
-  const [titleDraft, setTitleDraft]       = useState(task.title)
-  const [expanded, setExpanded]           = useState(false)
-  const [assigneeDraft, setAssigneeDraft] = useState(task.assignee ?? 'all')
-  const [dueDraft, setDueDraft]           = useState(task.due_time ?? '')
+  const [editingTitle, setEditingTitle]         = useState(false)
+  const [titleDraft, setTitleDraft]             = useState(task.title)
+  const [expanded, setExpanded]                 = useState(false)
+  const [assigneeDraft, setAssigneeDraft]       = useState(task.assignee ?? 'all')
+  const [dueDraft, setDueDraft]                 = useState(task.due_time ?? '')
+  const [saving, setSaving]                     = useState(false)
+  const [showAllAssignees, setShowAllAssignees] = useState(false)
 
   function handleTitleBlur() {
     setEditingTitle(false)
@@ -254,22 +275,28 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
     else setTitleDraft(task.title)
   }
 
-  function handleMetaSave() {
-    onUpdate(task, { assignee: assigneeDraft, due_day: null, due_time: dueDraft.trim() || null })
-    setExpanded(false)
+  async function handleMetaSave() {
+    setSaving(true)
+    try {
+      await onUpdate(task, { assignee: assigneeDraft, due_day: null, due_time: dueDraft.trim() || null })
+      setExpanded(false)
+    } finally {
+      setSaving(false)
+    }
   }
 
   function handleExpandToggle() {
     setExpanded(p => !p)
     setAssigneeDraft(task.assignee ?? 'all')
     setDueDraft(task.due_time ?? '')
+    setShowAllAssignees(false)
   }
 
   const dueLabel = task.due_time || null
 
   return (
     <li className="group px-3 py-2.5">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <button
           onClick={() => onToggle(task)}
           className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${task.completed ? 'bg-taupe-600 border-taupe-600' : 'border-stone-300 dark:border-stone-600 hover:border-taupe-600'}`}
@@ -289,20 +316,25 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
             onBlur={handleTitleBlur}
             onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { setTitleDraft(task.title); setEditingTitle(false) } }}
             autoFocus
-            className="flex-1 text-sm border-b border-taupe-600 outline-none bg-transparent text-stone-700 dark:text-stone-200"
+            className="flex-1 min-w-0 text-sm border-b border-taupe-600 outline-none bg-transparent text-stone-700 dark:text-stone-200"
           />
         ) : (
           <span
             onClick={() => { setTitleDraft(task.title); setEditingTitle(true) }}
-            className={`flex-1 text-sm cursor-text ${task.completed ? 'line-through text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}
+            className={`flex-1 min-w-0 text-sm cursor-text truncate ${task.completed ? 'line-through text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}
           >
             {task.title}
           </span>
         )}
 
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          {!expanded && <AssigneeChips raw={task.assignee} />}
-          {dueLabel && !expanded && (
+          {!expanded && (
+            <AssigneeChips
+              raw={task.assignee}
+              onShowAll={() => { setShowAllAssignees(p => !p); setExpanded(false) }}
+            />
+          )}
+          {dueLabel && !expanded && !showAllAssignees && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-taupe-50 dark:bg-taupe-600/20 text-taupe-600 font-medium whitespace-nowrap">
               {dueLabel}
             </span>
@@ -323,6 +355,13 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
         </div>
       </div>
 
+      {/* Expanded all-assignees row */}
+      {showAllAssignees && !expanded && (
+        <div className="mt-1.5 ml-6">
+          <AssigneeAllChips raw={task.assignee} onCollapse={() => setShowAllAssignees(false)} />
+        </div>
+      )}
+
       {expanded && (
         <div className="mt-2 ml-6 flex items-center gap-2 flex-wrap">
           <AssigneePicker value={assigneeDraft} onChange={setAssigneeDraft} />
@@ -332,7 +371,9 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
             placeholder="Due (e.g. May 28, 1:00 PM)"
             className="text-xs bg-stone-100 dark:bg-stone-700 dark:text-stone-300 border-none rounded-md px-2 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-taupe-600"
           />
-          <button onClick={handleMetaSave} className="text-xs bg-taupe-600 text-white px-3 py-1.5 rounded-md hover:bg-taupe-700 transition-colors">Save</button>
+          <button onClick={handleMetaSave} disabled={saving} className="text-xs bg-taupe-600 text-white px-3 py-1.5 rounded-md hover:bg-taupe-700 transition-colors disabled:opacity-40">
+            {saving ? '…' : 'Save'}
+          </button>
           <button onClick={() => setExpanded(false)} className="text-xs text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 px-2 py-1.5">Cancel</button>
         </div>
       )}
@@ -384,7 +425,9 @@ export function BridesmaidsPage() {
     requestDelete(id, label)
   }
 
-  const visibleTasks   = tasks.filter(t => !hiddenIds.has(t.id))
+  const visibleTasks = tasks
+    .filter(t => !hiddenIds.has(t.id))
+    .sort((a, b) => Number(a.completed) - Number(b.completed))
   const chair1 = slots.filter(s => s.artist_chair === 1)
   const chair2 = slots.filter(s => s.artist_chair === 2)
   const completedTasks = visibleTasks.filter(t => t.completed).length

@@ -321,6 +321,7 @@ export function TimelinePage() {
   const { events, loading, error, setDelay, updateEvent, addEvent, deleteEvent } = useTimeline()
   const { unlocked, unlock, lock, error: pinError, clearError } = useTimelineAuth()
   const [activeFilter, setActiveFilter] = useState('all')
+  const [searchQuery, setSearchQuery]   = useState('')
   const [showPinInput, setShowPinInput] = useState(false)
   const [pinDraft, setPinDraft]         = useState('')
   const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteEvent)
@@ -353,9 +354,10 @@ export function TimelinePage() {
   const delayed  = shownEvents.filter(e => e.status === 'delayed').length
   const buffered = shownEvents.filter(e => e.status === 'buffered').length
 
-  const visibleEvents = activeFilter === 'all'
-    ? shownEvents
-    : shownEvents.filter(e => e.category === activeFilter)
+  const q = searchQuery.trim().toLowerCase()
+  const visibleEvents = shownEvents
+    .filter(e => activeFilter === 'all' || e.category === activeFilter)
+    .filter(e => !q || e.title.toLowerCase().includes(q) || (e.location ?? '').toLowerCase().includes(q) || (e.notes ?? '').toLowerCase().includes(q))
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -408,9 +410,23 @@ export function TimelinePage() {
         </form>
       )}
 
-      <p className="text-xs text-stone-400 dark:text-stone-500 mb-4">
+      <p className="text-xs text-stone-400 dark:text-stone-500 mb-3">
         {unlocked ? 'Tap the pencil icon to edit an event or set delays. Ripple shows downstream impact.' : 'View-only — tap the lock icon to edit.'}
       </p>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 dark:text-stone-500 pointer-events-none" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
+          <circle cx="6" cy="6" r="4"/><path strokeLinecap="round" d="M10 10l2.5 2.5"/>
+        </svg>
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search events…"
+          className="w-full pl-8 pr-3 py-1.5 text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 dark:text-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-taupe-600 placeholder:text-stone-400 dark:placeholder:text-stone-500"
+        />
+      </div>
 
       {/* Filter chips */}
       <div className="flex gap-1.5 flex-wrap mb-5">
