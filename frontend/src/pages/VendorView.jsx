@@ -53,7 +53,7 @@ export function VendorView() {
                   : 'border-transparent text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
               }`}
             >
-              {id === 'timeline' ? 'Timeline' : 'Vendors'}
+              {id === 'timeline' ? 'Timeline' : 'Team'}
             </button>
           ))}
         </div>

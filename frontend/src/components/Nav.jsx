@@ -3,7 +3,7 @@ const ALL_TABS = [
   { id: 'timeline',     label: 'Timeline' },
   { id: 'packing',      label: 'Packing' },
   { id: 'bridesmaids',  label: 'Bridesmaids' },
-  { id: 'vendors',      label: 'Vendors' },
+  { id: 'vendors',      label: 'Team' },
 ]
 
 const DAY_OF_TABS = new Set(['timeline', 'vendors'])
