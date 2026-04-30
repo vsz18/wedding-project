@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTimeline } from '../hooks/useTimeline.js'
+import { useTimelineAuth } from '../hooks/useTimelineAuth.js'
 import { useDeleteUndo } from '../hooks/useDeleteUndo.js'
 import { UndoToast } from '../components/UndoToast.jsx'
 
@@ -117,7 +118,7 @@ function EventEditForm({ event, onSave, onCancel }) {
   )
 }
 
-function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
+function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
   const [editing, setEditing]     = useState(false)
   const [showNotes, setShowNotes] = useState(false)
   const [delayInput, setDelayInput] = useState(String(event.delay_mins || 0))
@@ -165,24 +166,28 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
                   {event.category.replace('_', ' ')}
                 </span>
               )}
-              <button
-                onClick={() => setEditing(p => !p)}
-                aria-label="Edit event"
-                className={`transition-all ${editing ? 'text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-taupe-600 sm:opacity-0 sm:group-hover:opacity-100'}`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 1.5l3 3-7 7H2.5v-3l7-7z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => onDelete(event.id)}
-                aria-label="Delete event"
-                className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all sm:opacity-0 sm:group-hover:opacity-100"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
-                </svg>
-              </button>
+              {unlocked && (
+                <>
+                  <button
+                    onClick={() => setEditing(p => !p)}
+                    aria-label="Edit event"
+                    className={`transition-all ${editing ? 'text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-taupe-600 sm:opacity-0 sm:group-hover:opacity-100'}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 1.5l3 3-7 7H2.5v-3l7-7z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => onDelete(event.id)}
+                    aria-label="Delete event"
+                    className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -215,26 +220,28 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
             </p>
           )}
 
-          {/* Delay row */}
-          <div className="flex items-center gap-2 mt-2">
-            <label className="text-xs text-stone-400 dark:text-stone-500">Running late:</label>
-            <input
-              type="number" min={0} max={120}
-              value={delayInput}
-              onChange={e => setDelayInput(e.target.value)}
-              onBlur={handleDelayBlur}
-              onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-              className="w-14 text-xs text-center border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-taupe-600"
-            />
-            <span className="text-xs text-stone-400 dark:text-stone-500">min</span>
-            {(event.delay_mins || 0) > 0 && (
-              <button onClick={() => { setDelayInput('0'); onSetDelay(event.id, 0) }} className="text-xs text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 underline">
-                reset
-              </button>
-            )}
-          </div>
+          {/* Delay row — only visible when unlocked */}
+          {unlocked && (
+            <div className="flex items-center gap-2 mt-2">
+              <label className="text-xs text-stone-400 dark:text-stone-500">Running late:</label>
+              <input
+                type="number" min={0} max={120}
+                value={delayInput}
+                onChange={e => setDelayInput(e.target.value)}
+                onBlur={handleDelayBlur}
+                onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                className="w-14 text-xs text-center border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-taupe-600"
+              />
+              <span className="text-xs text-stone-400 dark:text-stone-500">min</span>
+              {(event.delay_mins || 0) > 0 && (
+                <button onClick={() => { setDelayInput('0'); onSetDelay(event.id, 0) }} className="text-xs text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 underline">
+                  reset
+                </button>
+              )}
+            </div>
+          )}
 
-          {editing && (
+          {unlocked && editing && (
             <EventEditForm event={event} onSave={handleSave} onCancel={() => setEditing(false)} />
           )}
         </div>
@@ -296,12 +303,34 @@ function AddEventForm({ onAdd }) {
 
 export function TimelinePage() {
   const { events, loading, error, setDelay, updateEvent, addEvent, deleteEvent } = useTimeline()
+  const { unlocked, unlock, lock, error: pinError, clearError } = useTimelineAuth()
   const [activeFilter, setActiveFilter] = useState('all')
+  const [showPinInput, setShowPinInput] = useState(false)
+  const [pinDraft, setPinDraft]         = useState('')
   const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteEvent)
 
   function handleDeleteEvent(id) {
     const label = events.find(e => e.id === id)?.title ?? 'Event'
     requestDelete(id, label)
+  }
+
+  function handleLockClick() {
+    if (unlocked) {
+      lock()
+      setShowPinInput(false)
+    } else {
+      setShowPinInput(p => !p)
+      setPinDraft('')
+      clearError()
+    }
+  }
+
+  function handlePinSubmit(e) {
+    e.preventDefault()
+    if (unlock(pinDraft)) {
+      setShowPinInput(false)
+      setPinDraft('')
+    }
   }
 
   const shownEvents   = events.filter(e => !hiddenIds.has(e.id))
@@ -315,14 +344,57 @@ export function TimelinePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Day-of Timeline</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Day-of Timeline</h2>
+          <button
+            onClick={handleLockClick}
+            aria-label={unlocked ? 'Lock timeline editing' : 'Unlock timeline editing'}
+            title={unlocked ? 'Lock editing' : 'Unlock to edit'}
+            className={`transition-colors ${unlocked ? 'text-taupe-600 hover:text-taupe-700' : 'text-stone-300 dark:text-stone-600 hover:text-stone-500 dark:hover:text-stone-400'}`}
+          >
+            {unlocked ? (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth={1.8}>
+                <rect x="3" y="9" width="14" height="9" rx="2" />
+                <path strokeLinecap="round" d="M7 9V6a3 3 0 0 1 6 0" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth={1.8}>
+                <rect x="3" y="9" width="14" height="9" rx="2" />
+                <path strokeLinecap="round" d="M7 9V6a3 3 0 0 1 6 0v3" />
+              </svg>
+            )}
+          </button>
+        </div>
         <div className="flex gap-2 text-xs">
           {delayed  > 0 && <span className="px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 rounded-full font-medium">{delayed} ripple{delayed > 1 ? 's' : ''}</span>}
           {buffered > 0 && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300 rounded-full font-medium">{buffered} buffered</span>}
           {delayed === 0 && buffered === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded-full font-medium">On schedule</span>}
         </div>
       </div>
-      <p className="text-xs text-stone-400 dark:text-stone-500 mb-4">Tap the pencil icon to edit an event or set delays. Ripple shows downstream impact.</p>
+
+      {/* PIN input */}
+      {!unlocked && showPinInput && (
+        <form onSubmit={handlePinSubmit} className="flex items-center gap-2 mb-3">
+          <input
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={pinDraft}
+            onChange={e => { setPinDraft(e.target.value); clearError() }}
+            placeholder="Enter PIN"
+            autoFocus
+            className="w-32 text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600"
+          />
+          <button type="submit" className="text-sm bg-taupe-600 text-white px-3 py-1.5 rounded-lg hover:bg-taupe-700 transition-colors">
+            Unlock
+          </button>
+          {pinError && <span className="text-xs text-red-400">Incorrect PIN</span>}
+        </form>
+      )}
+
+      <p className="text-xs text-stone-400 dark:text-stone-500 mb-4">
+        {unlocked ? 'Tap the pencil icon to edit an event or set delays. Ripple shows downstream impact.' : 'View-only — tap the lock icon to edit.'}
+      </p>
 
       {/* Filter chips */}
       <div className="flex gap-1.5 flex-wrap mb-5">
@@ -349,12 +421,12 @@ export function TimelinePage() {
 
       {!loading && !error && (
         <div className="space-y-2">
-          {activeFilter === 'all' && <AddEventForm onAdd={addEvent} />}
+          {activeFilter === 'all' && unlocked && <AddEventForm onAdd={addEvent} />}
           {visibleEvents.length === 0 && (
             <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No events in this category.</p>
           )}
           {visibleEvents.map(ev => (
-            <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} />
+            <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} />
           ))}
         </div>
       )}
