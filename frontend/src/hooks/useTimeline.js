@@ -98,16 +98,8 @@ export function useTimeline() {
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error('Failed to create event')
-    const created = await res.json()
-    setEvents(prev =>
-      [...prev, created].sort((a, b) => {
-        const tA = (a.start_time || '').slice(0, 5)
-        const tB = (b.start_time || '').slice(0, 5)
-        if (tA !== tB) return tA.localeCompare(tB)
-        return (a.sort_order || 0) - (b.sort_order || 0)
-      })
-    )
-  }, [])
+    await fetchEvents()
+  }, [fetchEvents])
 
   const deleteEvent = useCallback(async (id) => {
     const res = await fetch(`${API}/${id}`, { method: 'DELETE' })

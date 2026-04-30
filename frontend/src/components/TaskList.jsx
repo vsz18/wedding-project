@@ -19,7 +19,7 @@ export function TaskList({ tasks, onToggle, onUpdate, onDelete, onReorder }) {
 
   return (
     <div className="max-w-2xl mx-auto w-full px-4">
-      {Object.entries(groups).map(([category, groupTasks]) => (
+      {Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)).map(([category, groupTasks]) => (
         <TaskGroup
           key={category}
           category={category}

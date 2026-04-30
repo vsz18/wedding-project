@@ -2,7 +2,7 @@ import { pool } from '../db/pool.js'
 
 export async function listTasks(_req, res) {
   const { rows } = await pool.query(
-    'SELECT * FROM tasks ORDER BY category, sort_order, id'
+    'SELECT * FROM tasks ORDER BY category ASC, due_day DESC NULLS LAST, id ASC'
   )
   res.json(rows)
 }

@@ -3,6 +3,16 @@ import { useState, useEffect, useCallback } from 'react'
 const BASE = import.meta.env.VITE_API_URL || ''
 const API = `${BASE}/api/v1/tasks`
 
+// category A→Z, then earliest due date first (higher due_day = earlier date), nulls last
+function sortTasks(a, b) {
+  const cat = (a.category || '').localeCompare(b.category || '')
+  if (cat !== 0) return cat
+  if (a.due_day == null && b.due_day == null) return 0
+  if (a.due_day == null) return 1
+  if (b.due_day == null) return -1
+  return b.due_day - a.due_day
+}
+
 export function useTasks() {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -30,7 +40,7 @@ export function useTasks() {
     })
     if (!res.ok) throw new Error('Failed to create task')
     const created = await res.json()
-    setTasks(prev => [...prev, created].sort((a, b) => (a.due_day ?? 99) - (b.due_day ?? 99)))
+    setTasks(prev => [...prev, created].sort(sortTasks))
   }, [])
 
   const toggleTask = useCallback(async (task) => {
@@ -54,11 +64,7 @@ export function useTasks() {
     })
     if (!res.ok) throw new Error('Failed to update task')
     const saved = await res.json()
-    setTasks(prev =>
-      prev
-        .map(t => t.id === saved.id ? saved : t)
-        .sort((a, b) => (a.due_day ?? 99) - (b.due_day ?? 99))
-    )
+    setTasks(prev => prev.map(t => t.id === saved.id ? saved : t).sort(sortTasks))
   }, [])
 
   const deleteTask = useCallback(async (id) => {

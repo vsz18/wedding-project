@@ -20,9 +20,9 @@ export function TaskGroup({ category, tasks, onToggle, onUpdate, onDelete, onReo
   const [items, setItems] = useState(tasks)
   const completed = items.filter(t => t.completed).length
 
-  // Sync if parent tasks change (new task added, toggle, etc.)
+  // Sync if parent tasks change
   if (tasks.length !== items.length ||
-      tasks.some((t, i) => t.id !== items[i]?.id || t.completed !== items[i]?.completed || t.title !== items[i]?.title)) {
+      tasks.some((t, i) => t.id !== items[i]?.id || t.completed !== items[i]?.completed || t.title !== items[i]?.title || t.due_day !== items[i]?.due_day || t.category !== items[i]?.category)) {
     setItems(tasks)
   }
 
