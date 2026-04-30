@@ -1,10 +1,10 @@
 import { TaskGroup } from './TaskGroup.jsx'
 
-/** @param {{ tasks: object[], onToggle: Function, onUpdate: Function, onDelete: Function }} props */
-export function TaskList({ tasks, onToggle, onUpdate, onDelete }) {
+/** @param {{ tasks: object[], onToggle: Function, onUpdate: Function, onDelete: Function, onReorder: Function }} props */
+export function TaskList({ tasks, onToggle, onUpdate, onDelete, onReorder }) {
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-12 text-stone-400 text-sm">
+      <div className="text-center py-12 text-stone-400 dark:text-stone-500 text-sm">
         No tasks yet — add one below.
       </div>
     )
@@ -27,6 +27,7 @@ export function TaskList({ tasks, onToggle, onUpdate, onDelete }) {
           onToggle={onToggle}
           onUpdate={onUpdate}
           onDelete={onDelete}
+          onReorder={onReorder}
         />
       ))}
     </div>

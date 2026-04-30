@@ -66,5 +66,23 @@ export function useTasks() {
     setTasks(prev => prev.filter(t => t.id !== id))
   }, [])
 
-  return { tasks, loading, error, addTask, toggleTask, updateTask, deleteTask }
+  const reorderTasks = useCallback(async (ids) => {
+    const orderMap = Object.fromEntries(ids.map((id, i) => [id, i + 1]))
+    setTasks(prev =>
+      prev
+        .map(t => t.id in orderMap ? { ...t, sort_order: orderMap[t.id] } : t)
+        .sort((a, b) => {
+          if (a.category !== b.category) return a.category < b.category ? -1 : 1
+          return (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id - b.id
+        })
+    )
+    const res = await fetch(`${API}/reorder`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    })
+    if (!res.ok) throw new Error('Failed to reorder')
+  }, [])
+
+  return { tasks, loading, error, addTask, toggleTask, updateTask, deleteTask, reorderTasks }
 }

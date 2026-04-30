@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTasks } from './hooks/useTasks.js'
 import { useWeddingDate } from './hooks/useWeddingDate.js'
 import { useDeleteUndo } from './hooks/useDeleteUndo.js'
+import { useDarkMode } from './hooks/useDarkMode.js'
 import { Nav } from './components/Nav.jsx'
 import { CountdownHeader } from './components/CountdownHeader.jsx'
 import { ProgressBar } from './components/ProgressBar.jsx'
@@ -14,8 +15,11 @@ import { VendorsPage } from './pages/VendorsPage.jsx'
 import { BridesmaidsPage } from './pages/BridesmaidsPage.jsx'
 
 export function App() {
-  const [tab, setTab] = useState('tasks')
-  const { tasks, loading, error, addTask, toggleTask, updateTask, deleteTask } = useTasks()
+  const [tab, setTab]             = useState('tasks')
+  const [dayOfMode, setDayOfMode] = useState(() => localStorage.getItem('day-of-mode') === 'true')
+  const { dark, toggle: toggleDark } = useDarkMode()
+
+  const { tasks, loading, error, addTask, toggleTask, updateTask, deleteTask, reorderTasks } = useTasks()
   const { weddingDate, setWeddingDate, daysRemaining } = useWeddingDate()
   const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteTask)
 
@@ -27,17 +31,35 @@ export function App() {
     requestDelete(id, label)
   }
 
+  function toggleDayOf() {
+    setDayOfMode(p => {
+      const next = !p
+      localStorage.setItem('day-of-mode', String(next))
+      // If the active tab is hidden in day-of mode, jump to timeline
+      if (next && tab !== 'timeline' && tab !== 'vendors') setTab('timeline')
+      return next
+    })
+  }
+
   return (
-    <div className="min-h-screen bg-stone-50 font-sans">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-900 font-sans transition-colors">
       <CountdownHeader
         daysRemaining={daysRemaining}
         weddingDate={weddingDate}
         onDateChange={setWeddingDate}
+        dayOfMode={dayOfMode}
       />
 
-      <Nav active={tab} onChange={setTab} />
+      <Nav
+        active={tab}
+        onChange={setTab}
+        dark={dark}
+        onToggleDark={toggleDark}
+        dayOfMode={dayOfMode}
+        onToggleDayOf={toggleDayOf}
+      />
 
-      {tab === 'tasks' && (
+      {tab === 'tasks' && !dayOfMode && (
         <div className="max-w-2xl mx-auto">
           <div className="pt-6">
             <ProgressBar total={visibleTasks.length} completed={completedCount} />
@@ -47,7 +69,13 @@ export function App() {
           {error   && <p className="text-center text-sm text-red-400 py-8">Could not load tasks: {error}</p>}
 
           {!loading && !error && (
-            <TaskList tasks={visibleTasks} onToggle={toggleTask} onUpdate={updateTask} onDelete={handleDeleteTask} />
+            <TaskList
+              tasks={visibleTasks}
+              onToggle={toggleTask}
+              onUpdate={updateTask}
+              onDelete={handleDeleteTask}
+              onReorder={reorderTasks}
+            />
           )}
 
           <AddTaskForm onAdd={addTask} />
@@ -56,8 +84,8 @@ export function App() {
       )}
 
       {tab === 'timeline'    && <TimelinePage />}
-      {tab === 'packing'     && <PackingPage />}
-      {tab === 'bridesmaids' && <BridesmaidsPage />}
+      {tab === 'packing'     && !dayOfMode && <PackingPage />}
+      {tab === 'bridesmaids' && !dayOfMode && <BridesmaidsPage />}
       {tab === 'vendors'     && <VendorsPage />}
     </div>
   )
