@@ -26,7 +26,7 @@ export function CountdownHeader({ daysRemaining, weddingDate, onDateChange, dayO
         {daysRemaining}
       </div>
       <div className="mt-2 text-stone-500 dark:text-stone-400 text-sm uppercase tracking-widest font-medium">
-        {daysRemaining === 1 ? 'day' : 'days'} until your wedding
+        {daysRemaining === 1 ? 'day' : 'days'} until the Scott-Zhang wedding
       </div>
 
       <div className="mt-4">

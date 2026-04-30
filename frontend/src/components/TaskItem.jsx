@@ -70,7 +70,7 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder"
-          className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none text-stone-300 dark:text-stone-600 hover:text-stone-400 dark:hover:text-stone-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none text-stone-300 dark:text-stone-600 hover:text-stone-400 dark:hover:text-stone-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
         >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
             <circle cx="5" cy="4" r="1.2"/><circle cx="11" cy="4" r="1.2"/>
@@ -123,7 +123,7 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
           <button
             onClick={() => { setExpanded(p => !p); setCategoryDraft(task.category || 'general'); setDueDateDraft(dueDayToDateStr(task.due_day)) }}
             aria-label="Edit details"
-            className={`opacity-0 group-hover:opacity-100 transition-all ${expanded ? 'opacity-100 text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-stone-500 dark:hover:text-stone-400'}`}
+            className={`transition-all ${expanded ? 'text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-stone-500 dark:hover:text-stone-400 sm:opacity-0 sm:group-hover:opacity-100'}`}
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 1.5l3 3-7 7H2.5v-3l7-7z" />
@@ -133,7 +133,7 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
           <button
             onClick={() => onDelete(task.id)}
             aria-label="Delete task"
-            className="opacity-0 group-hover:opacity-100 text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all"
+            className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all sm:opacity-0 sm:group-hover:opacity-100"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />

@@ -68,6 +68,8 @@ export function App() {
           {loading && <p className="text-center text-sm text-stone-400 py-8">Loading tasks…</p>}
           {error   && <p className="text-center text-sm text-red-400 py-8">Could not load tasks: {error}</p>}
 
+          <AddTaskForm onAdd={addTask} />
+
           {!loading && !error && (
             <TaskList
               tasks={visibleTasks}
@@ -77,8 +79,6 @@ export function App() {
               onReorder={reorderTasks}
             />
           )}
-
-          <AddTaskForm onAdd={addTask} />
           {pendingDelete && <UndoToast label={pendingDelete.label} onUndo={undoDelete} />}
         </div>
       )}

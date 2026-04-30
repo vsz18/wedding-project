@@ -2,7 +2,7 @@ import { pool } from '../db/pool.js'
 
 export async function listEvents(_req, res) {
   const { rows } = await pool.query(
-    'SELECT * FROM timeline_events ORDER BY sort_order, start_time'
+    'SELECT * FROM timeline_events ORDER BY start_time, sort_order'
   )
   res.json(rows)
 }

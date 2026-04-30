@@ -168,7 +168,7 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
               <button
                 onClick={() => setEditing(p => !p)}
                 aria-label="Edit event"
-                className={`transition-all ${editing ? 'text-taupe-600' : 'opacity-0 group-hover:opacity-100 text-stone-300 dark:text-stone-600 hover:text-taupe-600'}`}
+                className={`transition-all ${editing ? 'text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-taupe-600 sm:opacity-0 sm:group-hover:opacity-100'}`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 1.5l3 3-7 7H2.5v-3l7-7z" />
@@ -177,7 +177,7 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
               <button
                 onClick={() => onDelete(event.id)}
                 aria-label="Delete event"
-                className="opacity-0 group-hover:opacity-100 text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all"
+                className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all sm:opacity-0 sm:group-hover:opacity-100"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
@@ -322,7 +322,7 @@ export function TimelinePage() {
           {delayed === 0 && buffered === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded-full font-medium">On schedule</span>}
         </div>
       </div>
-      <p className="text-xs text-stone-400 dark:text-stone-500 mb-4">Hover any event to edit details or set delays. Ripple shows downstream impact.</p>
+      <p className="text-xs text-stone-400 dark:text-stone-500 mb-4">Tap the pencil icon to edit an event or set delays. Ripple shows downstream impact.</p>
 
       {/* Filter chips */}
       <div className="flex gap-1.5 flex-wrap mb-5">
@@ -349,13 +349,13 @@ export function TimelinePage() {
 
       {!loading && !error && (
         <div className="space-y-2">
+          {activeFilter === 'all' && <AddEventForm onAdd={addEvent} />}
           {visibleEvents.length === 0 && (
             <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No events in this category.</p>
           )}
           {visibleEvents.map(ev => (
             <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} />
           ))}
-          {activeFilter === 'all' && <AddEventForm onAdd={addEvent} />}
         </div>
       )}
       {pendingDelete && <UndoToast label={pendingDelete.label} onUndo={undoDelete} />}
