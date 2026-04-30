@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-const UNDO_MS = 30_000
+const UNDO_MS = 10_000
 
 export function useDeleteUndo(commitDelete) {
   const [pendingDelete, setPendingDelete] = useState(null)
