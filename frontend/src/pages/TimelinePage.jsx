@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTimeline } from '../hooks/useTimeline.js'
+import { useDeleteUndo } from '../hooks/useDeleteUndo.js'
+import { UndoToast } from '../components/UndoToast.jsx'
 
 const CATEGORY_COLORS = {
   getting_ready:  'bg-pink-50 text-pink-700',
@@ -343,13 +345,20 @@ function AddEventForm({ onAdd }) {
 export function TimelinePage() {
   const { events, loading, error, setDelay, updateEvent, addEvent, deleteEvent } = useTimeline()
   const [activeFilter, setActiveFilter] = useState('all')
+  const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteEvent)
 
-  const delayed  = events.filter(e => e.status === 'delayed').length
-  const buffered = events.filter(e => e.status === 'buffered').length
+  function handleDeleteEvent(id) {
+    const label = events.find(e => e.id === id)?.title ?? 'Event'
+    requestDelete(id, label)
+  }
+
+  const shownEvents   = events.filter(e => !hiddenIds.has(e.id))
+  const delayed  = shownEvents.filter(e => e.status === 'delayed').length
+  const buffered = shownEvents.filter(e => e.status === 'buffered').length
 
   const visibleEvents = activeFilter === 'all'
-    ? events
-    : events.filter(e => e.category === activeFilter)
+    ? shownEvents
+    : shownEvents.filter(e => e.category === activeFilter)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -359,7 +368,7 @@ export function TimelinePage() {
         <div className="flex gap-2 text-xs">
           {delayed  > 0 && <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full font-medium">{delayed} ripple{delayed > 1 ? 's' : ''}</span>}
           {buffered > 0 && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium">{buffered} buffered</span>}
-          {delayed === 0 && buffered === 0 && events.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">On schedule</span>}
+          {delayed === 0 && buffered === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">On schedule</span>}
         </div>
       </div>
       <p className="text-xs text-stone-400 mb-4">Hover any event to edit details or set delays. Ripple shows downstream impact.</p>
@@ -379,7 +388,7 @@ export function TimelinePage() {
             {f.label}
             {f.id !== 'all' && (
               <span className="ml-1.5 opacity-60">
-                {events.filter(e => e.category === f.id).length}
+                {shownEvents.filter(e => e.category === f.id).length}
               </span>
             )}
           </button>
@@ -400,12 +409,13 @@ export function TimelinePage() {
               event={ev}
               onSetDelay={setDelay}
               onUpdate={updateEvent}
-              onDelete={deleteEvent}
+              onDelete={handleDeleteEvent}
             />
           ))}
           {activeFilter === 'all' && <AddEventForm onAdd={addEvent} />}
         </div>
       )}
+      {pendingDelete && <UndoToast label={pendingDelete.label} onUndo={undoDelete} />}
     </div>
   )
 }

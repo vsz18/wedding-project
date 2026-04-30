@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMakeup } from '../hooks/useMakeup.js'
 import { useBridesmaids } from '../hooks/useBridesmaids.js'
+import { useDeleteUndo } from '../hooks/useDeleteUndo.js'
+import { UndoToast } from '../components/UndoToast.jsx'
 
 /* ─── constants ────────────────────────────────────────────── */
 function fmt(t) {
@@ -259,10 +261,9 @@ function AddMakeupSlotRow({ onAdd }) {
 function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleDraft, setTitleDraft]     = useState(task.title)
-  const [expanded, setExpanded]         = useState(false)
+  const [expanded, setExpanded]           = useState(false)
   const [assigneeDraft, setAssigneeDraft] = useState(task.assignee ?? 'all')
-  const [dueDayDraft, setDueDayDraft]   = useState(task.due_day ?? '')
-  const [dueTimeDraft, setDueTimeDraft] = useState(task.due_time ?? '')
+  const [dueDraft, setDueDraft]           = useState(task.due_time ?? '')
 
   function handleTitleBlur() {
     setEditingTitle(false)
@@ -274,8 +275,8 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
   function handleMetaSave() {
     onUpdate(task, {
       assignee: assigneeDraft,
-      due_day:  dueDayDraft !== '' ? Number(dueDayDraft) : null,
-      due_time: dueTimeDraft || null,
+      due_day:  null,
+      due_time: dueDraft.trim() || null,
     })
     setExpanded(false)
   }
@@ -283,15 +284,10 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
   function handleExpandToggle() {
     setExpanded(p => !p)
     setAssigneeDraft(task.assignee ?? 'all')
-    setDueDayDraft(task.due_day ?? '')
-    setDueTimeDraft(task.due_time ?? '')
+    setDueDraft(task.due_time ?? '')
   }
 
-  const dueLabel = task.due_time
-    ? task.due_time
-    : task.due_day != null
-    ? `Day ${task.due_day}`
-    : null
+  const dueLabel = task.due_time || null
 
   return (
     <li className="group px-3 py-2.5">
@@ -354,17 +350,10 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
         <div className="mt-2 ml-6 flex items-center gap-2 flex-wrap">
           <AssigneePicker value={assigneeDraft} onChange={setAssigneeDraft} />
           <input
-            type="number" min={1} max={30}
-            placeholder="Due day"
-            value={dueDayDraft}
-            onChange={e => setDueDayDraft(e.target.value)}
-            className="text-xs bg-stone-100 border-none rounded-md px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-taupe-600 text-stone-600"
-          />
-          <input
-            value={dueTimeDraft}
-            onChange={e => setDueTimeDraft(e.target.value)}
-            placeholder="Due time (e.g. 1:00 PM)"
-            className="text-xs bg-stone-100 border-none rounded-md px-2 py-1.5 w-44 focus:outline-none focus:ring-2 focus:ring-taupe-600 text-stone-600"
+            value={dueDraft}
+            onChange={e => setDueDraft(e.target.value)}
+            placeholder="Due (e.g. May 28, 1:00 PM)"
+            className="text-xs bg-stone-100 border-none rounded-md px-2 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-taupe-600 text-stone-600"
           />
           <button onClick={handleMetaSave} className="text-xs bg-taupe-600 text-white px-3 py-1.5 rounded-md hover:bg-taupe-700 transition-colors">
             Save
@@ -415,10 +404,17 @@ function AddBTaskRow({ onAdd }) {
 export function BridesmaidsPage() {
   const { slots, loading: makeupLoading, error: makeupError, addSlot, updateSlot, deleteSlot } = useMakeup()
   const { tasks, loading: tasksLoading, error: tasksError, addTask, toggleTask, updateTask, deleteTask } = useBridesmaids()
+  const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteTask)
 
+  function handleDeleteTask(id) {
+    const label = tasks.find(t => t.id === id)?.title ?? 'Task'
+    requestDelete(id, label)
+  }
+
+  const visibleTasks   = tasks.filter(t => !hiddenIds.has(t.id))
   const chair1 = slots.filter(s => s.artist_chair === 1)
   const chair2 = slots.filter(s => s.artist_chair === 2)
-  const completedTasks = tasks.filter(t => t.completed).length
+  const completedTasks = visibleTasks.filter(t => t.completed).length
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-10">
@@ -464,9 +460,9 @@ export function BridesmaidsPage() {
       <section>
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-serif text-2xl text-stone-800">Bridesmaids Tasks</h2>
-          <span className="text-xs text-stone-400">{completedTasks}/{tasks.length} done</span>
+          <span className="text-xs text-stone-400">{completedTasks}/{visibleTasks.length} done</span>
         </div>
-        <p className="text-xs text-stone-400 mb-4">Click a title to rename. Hover to assign people, set a due day, or a due time.</p>
+        <p className="text-xs text-stone-400 mb-4">Click a title to rename. Hover to assign people or set a due date/time.</p>
 
         {tasksLoading && <p className="text-sm text-stone-400 py-4">Loading…</p>}
         {tasksError   && <p className="text-sm text-red-400 py-4">{tasksError}</p>}
@@ -474,13 +470,13 @@ export function BridesmaidsPage() {
         {!tasksLoading && !tasksError && (
           <div className="bg-white rounded-xl shadow-sm">
             <ul className="divide-y divide-stone-100">
-              {tasks.map(task => (
+              {visibleTasks.map(task => (
                 <BTaskItem
                   key={task.id}
                   task={task}
                   onToggle={toggleTask}
                   onUpdate={updateTask}
-                  onDelete={deleteTask}
+                  onDelete={handleDeleteTask}
                 />
               ))}
               <AddBTaskRow onAdd={addTask} />
@@ -488,6 +484,8 @@ export function BridesmaidsPage() {
           </div>
         )}
       </section>
+
+      {pendingDelete && <UndoToast label={pendingDelete.label} onUndo={undoDelete} />}
     </div>
   )
 }
