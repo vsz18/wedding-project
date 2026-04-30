@@ -157,8 +157,8 @@ function MakeupSlotRow({ slot, onUpdate, onDelete }) {
       </td>
       <td className="px-3 py-2.5 text-sm text-stone-600 dark:text-stone-300 tabular-nums">{fmt(slot.start_time)}</td>
       <td className="px-3 py-2.5 text-sm text-stone-600 dark:text-stone-300 tabular-nums">{fmt(slot.end_time)}</td>
-      <td className="px-3 py-2.5">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${slot.artist_chair === 1 ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-900/50 dark:text-violet-300'}`}>
+      <td className="px-3 py-2.5 whitespace-nowrap">
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${slot.artist_chair === 1 ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-900/50 dark:text-violet-300'}`}>
           Chair {slot.artist_chair}
         </span>
       </td>
