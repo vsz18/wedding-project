@@ -25,6 +25,10 @@ const BRIDESMAIDS = [
   'Ayushi Sinha', 'Katherine Herbout', 'Valerie Wilson',
 ]
 
+const MEMBER_ROLE_COLORS = {
+  'Katherine Herbout': 'bg-[#d0dfc8] text-[#3a5c30] dark:bg-green-900/50 dark:text-green-300',
+}
+
 function parseAssignees(raw) {
   if (!raw || raw === 'all') return ['all']
   return raw.split(',').map(s => s.trim()).filter(Boolean)
@@ -36,13 +40,22 @@ function serializeAssignees(list) {
 
 function AssigneeChips({ raw }) {
   const list = parseAssignees(raw)
-  if (list.includes('all')) return null
+  if (list.includes('all')) return (
+    <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 dark:bg-stone-700 dark:text-stone-400 font-medium whitespace-nowrap">
+      All
+    </span>
+  )
   const show  = list.slice(0, 2)
   const extra = list.length - 2
   return (
     <div className="flex items-center gap-1">
       {show.map(name => (
-        <span key={name} className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300 font-medium whitespace-nowrap">
+        <span
+          key={name}
+          className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
+            MEMBER_ROLE_COLORS[name] || 'bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300'
+          }`}
+        >
           {name.split(' ')[0]}
         </span>
       ))}
