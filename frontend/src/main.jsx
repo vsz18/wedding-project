@@ -4,7 +4,7 @@ import './index.css'
 import { App } from './App.jsx'
 import { VendorView } from './pages/VendorView.jsx'
 
-const isVendorView = window.location.pathname.startsWith('/vendor')
+const isVendorView = window.location.pathname.startsWith('/team')
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
