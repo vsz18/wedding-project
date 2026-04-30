@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const API = 'http://localhost:3000/api/v1/tasks'
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const API = `${BASE}/api/v1/tasks`
 
 export function useTasks() {
   const [tasks, setTasks] = useState([])
