@@ -76,13 +76,13 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
 
   return (
     <li ref={setNodeRef} style={style} className="group px-4 py-2.5 bg-transparent">
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         {/* Drag handle */}
         <button
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder"
-          className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none text-stone-300 dark:text-stone-600 hover:text-stone-400 dark:hover:text-stone-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+          className="flex-shrink-0 mt-0.5 cursor-grab active:cursor-grabbing touch-none text-stone-300 dark:text-stone-600 hover:text-stone-400 dark:hover:text-stone-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
         >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
             <circle cx="5" cy="4" r="1.2"/><circle cx="11" cy="4" r="1.2"/>
@@ -95,7 +95,7 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
         <button
           onClick={() => onToggle(task)}
           aria-label={task.completed ? 'Mark incomplete' : 'Mark complete'}
-          className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+          className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
             task.completed ? 'bg-taupe-600 border-taupe-600' : 'border-stone-300 dark:border-stone-600 hover:border-taupe-600'
           }`}
         >
@@ -119,7 +119,7 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
         ) : (
           <span
             onClick={() => { setTitleDraft(task.title); setEditingTitle(true) }}
-            className={`flex-1 text-sm cursor-text select-none ${task.completed ? 'line-through text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}
+            className={`flex-1 min-w-0 text-sm cursor-text select-none ${task.completed ? 'line-through text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}
           >
             {task.title}
           </span>
