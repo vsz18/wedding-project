@@ -14,9 +14,9 @@ function fmt(t) {
 }
 
 const ROLE_COLORS = {
-  bride:      'bg-white text-stone-600 border border-stone-300',
-  moh:        'bg-[#d0dfc8] text-[#3a5c30]',
-  bridesmaid: 'bg-pink-200 text-pink-700',
+  bride:      'bg-white text-stone-600 border border-stone-300 dark:bg-stone-700 dark:text-stone-200 dark:border-stone-500',
+  moh:        'bg-[#d0dfc8] text-[#3a5c30] dark:bg-green-900/50 dark:text-green-300',
+  bridesmaid: 'bg-pink-200 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
 }
 const ROLE_LABELS = { bride: 'Bride', moh: 'MOH', bridesmaid: 'Bridesmaid' }
 
@@ -42,7 +42,7 @@ function AssigneeChips({ raw }) {
   return (
     <div className="flex items-center gap-1">
       {show.map(name => (
-        <span key={name} className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-medium whitespace-nowrap">
+        <span key={name} className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300 font-medium whitespace-nowrap">
           {name.split(' ')[0]}
         </span>
       ))}
@@ -158,7 +158,7 @@ function MakeupSlotRow({ slot, onUpdate, onDelete }) {
       <td className="px-3 py-2.5 text-sm text-stone-600 dark:text-stone-300 tabular-nums">{fmt(slot.start_time)}</td>
       <td className="px-3 py-2.5 text-sm text-stone-600 dark:text-stone-300 tabular-nums">{fmt(slot.end_time)}</td>
       <td className="px-3 py-2.5">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${slot.artist_chair === 1 ? 'bg-blue-50 text-blue-600' : 'bg-violet-50 text-violet-600'}`}>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${slot.artist_chair === 1 ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-900/50 dark:text-violet-300'}`}>
           Chair {slot.artist_chair}
         </span>
       </td>

@@ -14,15 +14,15 @@ const CATEGORY_LABELS = {
   other:           'Other',
 }
 const CATEGORY_COLORS = {
-  ceremony_venue:  'bg-purple-50 text-purple-700',
-  reception_venue: 'bg-blue-50 text-blue-700',
-  photography:     'bg-amber-50 text-amber-700',
-  dj:              'bg-pink-50 text-pink-700',
-  music:           'bg-pink-50 text-pink-700',
-  florals:         'bg-green-50 text-green-700',
-  beauty:          'bg-rose-50 text-rose-700',
-  catering:        'bg-orange-50 text-orange-700',
-  other:           'bg-stone-100 text-stone-600',
+  ceremony_venue:  'bg-purple-50 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+  reception_venue: 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+  photography:     'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+  dj:              'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+  music:           'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+  florals:         'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-300',
+  beauty:          'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
+  catering:        'bg-orange-50 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300',
+  other:           'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
 }
 
 const INPUT = 'w-full text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600'

@@ -4,19 +4,19 @@ import { useDeleteUndo } from '../hooks/useDeleteUndo.js'
 import { UndoToast } from '../components/UndoToast.jsx'
 
 const CATEGORY_COLORS = {
-  getting_ready:  'bg-pink-50 text-pink-700',
-  ceremony:       'bg-purple-50 text-purple-700',
-  reception:      'bg-blue-50 text-blue-700',
-  photos:         'bg-amber-50 text-amber-700',
-  travel:         'bg-teal-50 text-teal-700',
-  vendor_arrival: 'bg-stone-100 text-stone-600',
-  general:        'bg-stone-100 text-stone-600',
+  getting_ready:  'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+  ceremony:       'bg-purple-50 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+  reception:      'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+  photos:         'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+  travel:         'bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300',
+  vendor_arrival: 'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
+  general:        'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
 }
 
 const STATUS_STYLES = {
   'on-time':  { dot: 'bg-green-400',   card: '',                              badge: null },
-  'buffered': { dot: 'bg-yellow-400',  card: 'border-l-4 border-yellow-300', badge: () => 'bg-yellow-100 text-yellow-700', label: d => `Buffer absorbing +${d}m` },
-  'delayed':  { dot: 'bg-orange-500',  card: 'border-l-4 border-orange-400', badge: () => 'bg-orange-100 text-orange-700', label: d => `Ripple: +${d}m late` },
+  'buffered': { dot: 'bg-yellow-400',  card: 'border-l-4 border-yellow-300', badge: () => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300', label: d => `Buffer absorbing +${d}m` },
+  'delayed':  { dot: 'bg-orange-500',  card: 'border-l-4 border-orange-400', badge: () => 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300', label: d => `Ripple: +${d}m late` },
 }
 
 const FILTERS = [
@@ -317,9 +317,9 @@ export function TimelinePage() {
       <div className="flex items-center justify-between mb-2">
         <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Day-of Timeline</h2>
         <div className="flex gap-2 text-xs">
-          {delayed  > 0 && <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full font-medium">{delayed} ripple{delayed > 1 ? 's' : ''}</span>}
-          {buffered > 0 && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium">{buffered} buffered</span>}
-          {delayed === 0 && buffered === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">On schedule</span>}
+          {delayed  > 0 && <span className="px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 rounded-full font-medium">{delayed} ripple{delayed > 1 ? 's' : ''}</span>}
+          {buffered > 0 && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300 rounded-full font-medium">{buffered} buffered</span>}
+          {delayed === 0 && buffered === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded-full font-medium">On schedule</span>}
         </div>
       </div>
       <p className="text-xs text-stone-400 dark:text-stone-500 mb-4">Hover any event to edit details or set delays. Ripple shows downstream impact.</p>
