@@ -87,9 +87,8 @@ export function useTimeline() {
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error('Failed to update event')
-    const saved = await res.json()
-    setEvents(prev => prev.map(e => e.id === saved.id ? saved : e))
-  }, [])
+    await fetchEvents()
+  }, [fetchEvents])
 
   const addEvent = useCallback(async (data) => {
     const res = await fetch(API, {
