@@ -152,7 +152,8 @@ function EventEditForm({ event, onSave, onCancel }) {
 }
 
 function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
-  const [editing, setEditing]     = useState(false)
+  const [editing, setEditing]       = useState(false)
+  const [showNotes, setShowNotes]   = useState(false)
   const [delayInput, setDelayInput] = useState(String(event.delay_mins || 0))
 
   const st = STATUS_STYLES[event.status] || STATUS_STYLES['on-time']
@@ -229,7 +230,25 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
                 {st.label(event.incomingDelay)}
               </span>
             )}
+            {event.notes && (
+              <button
+                onClick={() => setShowNotes(p => !p)}
+                className="flex items-center gap-1 text-xs text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                Details
+                <svg className={`w-3 h-3 transition-transform ${showNotes ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2 4l4 4 4-4" />
+                </svg>
+              </button>
+            )}
           </div>
+
+          {/* Notes dropdown */}
+          {event.notes && showNotes && (
+            <p className="text-xs text-stone-500 mt-2 leading-relaxed bg-stone-50 rounded-lg px-3 py-2 whitespace-pre-wrap">
+              {event.notes}
+            </p>
+          )}
 
           {/* Delay row */}
           <div className="flex items-center gap-2 mt-2">
@@ -265,8 +284,9 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete }) {
 }
 
 function AddEventForm({ onAdd }) {
+  const EMPTY = { title: '', start_time: '', duration_mins: 30, buffer_mins: 0, location: '', category: 'general', notes: '' }
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ title: '', start_time: '', duration_mins: 30, buffer_mins: 0, location: '', category: 'general' })
+  const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
@@ -274,7 +294,7 @@ function AddEventForm({ onAdd }) {
     e.preventDefault()
     if (!form.title || !form.start_time) return
     setSaving(true)
-    try { await onAdd(form); setForm({ title: '', start_time: '', duration_mins: 30, buffer_mins: 0, location: '', category: 'general' }); setOpen(false) }
+    try { await onAdd(form); setForm(EMPTY); setOpen(false) }
     finally { setSaving(false) }
   }
 
@@ -305,6 +325,13 @@ function AddEventForm({ onAdd }) {
           {CATEGORY_OPTIONS.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
         </select>
       </div>
+      <textarea
+        value={form.notes}
+        onChange={e => set('notes', e.target.value)}
+        placeholder="Details (optional) — e.g. who gives a speech, song for first dance…"
+        rows={2}
+        className="w-full text-sm border border-stone-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-taupe-600 resize-none"
+      />
       <div className="flex justify-end gap-2">
         <button type="button" onClick={() => setOpen(false)} className="text-sm text-stone-400 px-3 py-1.5 hover:text-stone-600">Cancel</button>
         <button type="submit" disabled={saving} className="text-sm bg-taupe-600 text-white px-4 py-1.5 rounded-lg hover:bg-taupe-700 disabled:opacity-40 transition-colors">{saving ? 'Adding…' : 'Add event'}</button>

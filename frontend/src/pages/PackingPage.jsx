@@ -1,20 +1,22 @@
 import { useState } from 'react'
 import { usePacking } from '../hooks/usePacking.js'
 
-const PEOPLE = ['bride', 'groom', 'bridesmaids']
+const PEOPLE = ['bride', 'groom', 'bridesmaids', 'groomsmen']
 const SECTIONS = ['bridal_suite', 'ceremony', 'reception']
 
-const PERSON_LABELS   = { bride: 'Bride', groom: 'Groom', bridesmaids: 'Bridesmaids' }
-const SECTION_LABELS  = { bridal_suite: 'Bridal Suite', ceremony: 'Ceremony', reception: 'Reception' }
+const PERSON_LABELS   = { bride: 'Bride', groom: 'Groom', bridesmaids: 'Bridesmaids', groomsmen: 'Groomsmen' }
+const SECTION_LABELS  = { bridal_suite: 'Getting Ready', ceremony: 'Ceremony', reception: 'Reception' }
 const PERSON_COLORS   = {
   bride:        'border-pink-200 text-pink-700',
   groom:        'border-blue-200 text-blue-700',
   bridesmaids:  'border-purple-200 text-purple-700',
+  groomsmen:    'border-teal-200 text-teal-700',
 }
 const PERSON_ACTIVE   = {
   bride:        'bg-pink-600 text-white border-pink-600',
   groom:        'bg-blue-600 text-white border-blue-600',
   bridesmaids:  'bg-purple-600 text-white border-purple-600',
+  groomsmen:    'bg-teal-600 text-white border-teal-600',
 }
 
 /** Inline editable item row */
