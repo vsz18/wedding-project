@@ -1,15 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 
-/**
- * Optimistic delete with a 5-second undo window.
- * commitDelete(id) — the actual API delete call (from a hook).
- *
- * Returns:
- *   hiddenIds    — Set of ids removed from view but not yet committed
- *   pendingDelete — { id, label } | null  — drives the toast
- *   requestDelete(id, label) — hides item, starts timer
- *   undoDelete()  — cancels timer, restores item
- */
+const UNDO_MS = 30_000
+
 export function useDeleteUndo(commitDelete) {
   const [pendingDelete, setPendingDelete] = useState(null)
   const [hiddenIds, setHiddenIds]         = useState(new Set())
@@ -34,16 +26,19 @@ export function useDeleteUndo(commitDelete) {
       setPendingDelete(null)
       pendingRef.current = null
       timerRef.current   = null
-    }, 5000)
+    }, UNDO_MS)
   }
 
   function undoDelete() {
     if (!pendingRef.current) return
+    // Capture id before nulling the ref — the setHiddenIds updater
+    // may run after the ref is cleared, which would throw.
+    const id = pendingRef.current.id
     clearTimeout(timerRef.current)
     timerRef.current = null
-    setHiddenIds(prev => { const s = new Set(prev); s.delete(pendingRef.current.id); return s })
-    setPendingDelete(null)
     pendingRef.current = null
+    setPendingDelete(null)
+    setHiddenIds(prev => { const s = new Set(prev); s.delete(id); return s })
   }
 
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
