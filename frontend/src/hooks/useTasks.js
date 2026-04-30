@@ -3,10 +3,11 @@ import { useState, useEffect, useCallback } from 'react'
 const BASE = import.meta.env.VITE_API_URL || ''
 const API = `${BASE}/api/v1/tasks`
 
-// category A→Z, then earliest due date first (higher due_day = earlier date), nulls last
+// category A→Z, incomplete first, then earliest due date, nulls last
 function sortTasks(a, b) {
   const cat = (a.category || '').localeCompare(b.category || '')
   if (cat !== 0) return cat
+  if (a.completed !== b.completed) return Number(a.completed) - Number(b.completed)
   if (a.due_day == null && b.due_day == null) return 0
   if (a.due_day == null) return 1
   if (b.due_day == null) return -1
@@ -52,7 +53,7 @@ export function useTasks() {
     })
     if (!res.ok) throw new Error('Failed to update task')
     const saved = await res.json()
-    setTasks(prev => prev.map(t => t.id === saved.id ? saved : t))
+    setTasks(prev => prev.map(t => t.id === saved.id ? saved : t).sort(sortTasks))
   }, [])
 
   const updateTask = useCallback(async (task, changes) => {
