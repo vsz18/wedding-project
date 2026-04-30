@@ -34,7 +34,7 @@ function fmt24to12(t) {
   return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${p}`
 }
 
-function VendorCard({ vendor, onUpdate, onDelete }) {
+function VendorCard({ vendor, onUpdate, onDelete, readOnly }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm]       = useState(vendor)
   const [saving, setSaving]   = useState(false)
@@ -136,14 +136,16 @@ function VendorCard({ vendor, onUpdate, onDelete }) {
           {vendor.notes && <p className="mt-2 text-xs text-stone-400 dark:text-stone-500 leading-relaxed">{vendor.notes}</p>}
         </div>
 
-        <div className="flex items-center gap-1.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => setEditing(true)} className="text-stone-400 dark:text-stone-500 hover:text-taupe-600 transition-colors" aria-label="Edit vendor">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
-          </button>
-          <button onClick={() => onDelete(vendor.id)} className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-colors" aria-label="Delete vendor">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4l8 8M12 4l-8 8"/></svg>
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center gap-1.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => setEditing(true)} className="text-stone-400 dark:text-stone-500 hover:text-taupe-600 transition-colors" aria-label="Edit vendor">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+            </button>
+            <button onClick={() => onDelete(vendor.id)} className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-colors" aria-label="Delete vendor">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -195,7 +197,7 @@ function AddVendorForm({ onAdd }) {
   )
 }
 
-export function VendorsPage() {
+export function VendorsPage({ readOnly = false }) {
   const { vendors, loading, error, addVendor, updateVendor, deleteVendor } = useVendors()
 
   return (
@@ -211,9 +213,9 @@ export function VendorsPage() {
       {!loading && !error && (
         <div className="space-y-3">
           {vendors.map(v => (
-            <VendorCard key={v.id} vendor={v} onUpdate={updateVendor} onDelete={deleteVendor} />
+            <VendorCard key={v.id} vendor={v} onUpdate={updateVendor} onDelete={deleteVendor} readOnly={readOnly} />
           ))}
-          <AddVendorForm onAdd={addVendor} />
+          {!readOnly && <AddVendorForm onAdd={addVendor} />}
         </div>
       )}
     </div>
