@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useTimeline } from '../hooks/useTimeline.js'
 import { useTimelineAuth } from '../hooks/useTimelineAuth.js'
 import { useDeleteUndo } from '../hooks/useDeleteUndo.js'
@@ -119,9 +119,21 @@ function EventEditForm({ event, onSave, onCancel }) {
 }
 
 function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
-  const [editing, setEditing]     = useState(false)
-  const [showNotes, setShowNotes] = useState(false)
-  const [delayInput, setDelayInput] = useState(String(event.delay_mins || 0))
+  const [editing, setEditing]         = useState(false)
+  const [showNotes, setShowNotes]     = useState(false)
+  const [delayInput, setDelayInput]   = useState(String(event.delay_mins || 0))
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const deleteTimerRef = useRef(null)
+
+  function handleDeleteClick() {
+    if (confirmingDelete) {
+      clearTimeout(deleteTimerRef.current)
+      onDelete(event.id)
+    } else {
+      setConfirmingDelete(true)
+      deleteTimerRef.current = setTimeout(() => setConfirmingDelete(false), 2000)
+    }
+  }
 
   const st = STATUS_STYLES[event.status] || STATUS_STYLES['on-time']
   const isDelayed = event.status !== 'on-time'
@@ -178,13 +190,17 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
                     </svg>
                   </button>
                   <button
-                    onClick={() => onDelete(event.id)}
-                    aria-label="Delete event"
-                    className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                    onClick={handleDeleteClick}
+                    aria-label={confirmingDelete ? 'Confirm delete' : 'Delete event'}
+                    className={`transition-all sm:opacity-0 sm:group-hover:opacity-100 ${confirmingDelete ? 'text-red-500 scale-110' : 'text-stone-300 dark:text-stone-600 hover:text-red-400'}`}
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
-                    </svg>
+                    {confirmingDelete ? (
+                      <span className="text-xs font-medium leading-none">del?</span>
+                    ) : (
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
+                      </svg>
+                    )}
                   </button>
                 </>
               )}

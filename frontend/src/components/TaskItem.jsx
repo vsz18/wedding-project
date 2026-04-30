@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
@@ -37,6 +37,18 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
   const [expanded, setExpanded]         = useState(false)
   const [categoryDraft, setCategoryDraft] = useState(task.category || 'general')
   const [dueDateDraft, setDueDateDraft] = useState(dueDayToDateStr(task.due_day))
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const deleteTimerRef = useRef(null)
+
+  function handleDeleteClick() {
+    if (confirmingDelete) {
+      clearTimeout(deleteTimerRef.current)
+      onDelete(task.id)
+    } else {
+      setConfirmingDelete(true)
+      deleteTimerRef.current = setTimeout(() => setConfirmingDelete(false), 2000)
+    }
+  }
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: task.id })
@@ -131,13 +143,17 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }) {
           </button>
 
           <button
-            onClick={() => onDelete(task.id)}
-            aria-label="Delete task"
-            className="text-stone-300 dark:text-stone-600 hover:text-red-400 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+            onClick={handleDeleteClick}
+            aria-label={confirmingDelete ? 'Confirm delete' : 'Delete task'}
+            className={`transition-all sm:opacity-0 sm:group-hover:opacity-100 ${confirmingDelete ? 'text-red-500 scale-110' : 'text-stone-300 dark:text-stone-600 hover:text-red-400'}`}
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
-            </svg>
+            {confirmingDelete ? (
+              <span className="text-xs font-medium leading-none">del?</span>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
