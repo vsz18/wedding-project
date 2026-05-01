@@ -409,6 +409,7 @@ export function TimelinePage() {
   const { events, loading, error, setDelay, updateEvent, addEvent, deleteEvent } = useTimeline()
   const { unlocked, unlock, lock, error: pinError, clearError } = useTimelineAuth()
   const [activeFilter, setActiveFilter] = useState('all')
+  const [activePerson, setActivePerson] = useState('all')
   const [searchQuery, setSearchQuery]   = useState('')
   const [showPinInput, setShowPinInput] = useState(false)
   const [pinDraft, setPinDraft]         = useState('')
@@ -445,6 +446,7 @@ export function TimelinePage() {
   const q = searchQuery.trim().toLowerCase()
   const visibleEvents = shownEvents
     .filter(e => activeFilter === 'all' || parseCategories(e.category).includes(activeFilter))
+    .filter(e => activePerson === 'all' || e.point_person === activePerson)
     .filter(e => !q || e.title.toLowerCase().includes(q) || (e.location ?? '').toLowerCase().includes(q) || (e.notes ?? '').toLowerCase().includes(q))
 
   return (
@@ -516,8 +518,8 @@ export function TimelinePage() {
         />
       </div>
 
-      {/* Filter chips */}
-      <div className="flex gap-1.5 flex-wrap mb-5">
+      {/* Category filter chips */}
+      <div className="flex gap-1.5 flex-wrap mb-2">
         {FILTERS.map(f => (
           <button
             key={f.id}
@@ -536,6 +538,29 @@ export function TimelinePage() {
         ))}
       </div>
 
+      {/* Point person filter chips */}
+      <div className="flex gap-1.5 flex-wrap mb-5">
+        {['all', ...POINT_PERSON_OPTIONS].map(p => {
+          const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)
+          const count = p !== 'all' ? shownEvents.filter(e => e.point_person === p).length : null
+          if (p !== 'all' && count === 0) return null
+          return (
+            <button
+              key={p}
+              onClick={() => setActivePerson(p)}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                activePerson === p
+                  ? 'bg-stone-600 text-white dark:bg-stone-400 dark:text-stone-900'
+                  : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
+              }`}
+            >
+              {label}
+              {count !== null && <span className="ml-1.5 opacity-60">{count}</span>}
+            </button>
+          )
+        })}
+      </div>
+
       {loading && <p className="text-sm text-stone-400 text-center py-8">Loading timeline…</p>}
       {error   && <p className="text-sm text-red-400 text-center py-8">{error}</p>}
 
@@ -543,7 +568,7 @@ export function TimelinePage() {
         <div className="space-y-2">
           {activeFilter === 'all' && unlocked && <AddEventForm onAdd={addEvent} />}
           {visibleEvents.length === 0 && (
-            <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No events in this category.</p>
+            <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No events match these filters.</p>
           )}
           {visibleEvents.map(ev => (
             <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} />
