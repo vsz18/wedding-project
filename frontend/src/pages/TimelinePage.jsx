@@ -518,47 +518,53 @@ export function TimelinePage() {
         />
       </div>
 
-      {/* Category filter chips */}
-      <div className="flex gap-1.5 flex-wrap mb-2">
-        {FILTERS.map(f => (
-          <button
-            key={f.id}
-            onClick={() => setActiveFilter(f.id)}
-            className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-              activeFilter === f.id
-                ? 'bg-taupe-600 text-white'
-                : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
-            }`}
-          >
-            {f.label}
-            {f.id !== 'all' && (
-              <span className="ml-1.5 opacity-60">{shownEvents.filter(e => parseCategories(e.category).includes(f.id)).length}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Point person filter chips */}
-      <div className="flex gap-1.5 flex-wrap mb-5">
-        {['all', ...POINT_PERSON_OPTIONS].map(p => {
-          const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)
-          const count = p !== 'all' ? shownEvents.filter(e => e.point_person === p).length : null
-          if (p !== 'all' && count === 0) return null
-          return (
+      {/* Category filter */}
+      <div className="mb-3">
+        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">Category</p>
+        <div className="flex gap-1.5 flex-wrap">
+          {FILTERS.map(f => (
             <button
-              key={p}
-              onClick={() => setActivePerson(p)}
+              key={f.id}
+              onClick={() => setActiveFilter(f.id)}
               className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-                activePerson === p
-                  ? 'bg-stone-600 text-white dark:bg-stone-400 dark:text-stone-900'
+                activeFilter === f.id
+                  ? 'bg-taupe-600 text-white'
                   : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
               }`}
             >
-              {label}
-              {count !== null && <span className="ml-1.5 opacity-60">{count}</span>}
+              {f.label}
+              {f.id !== 'all' && (
+                <span className="ml-1.5 opacity-60">{shownEvents.filter(e => parseCategories(e.category).includes(f.id)).length}</span>
+              )}
             </button>
-          )
-        })}
+          ))}
+        </div>
+      </div>
+
+      {/* Point person filter */}
+      <div className="mb-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">Point Person</p>
+        <div className="flex gap-1.5 flex-wrap">
+          {['all', ...POINT_PERSON_OPTIONS].map(p => {
+            const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)
+            const count = p !== 'all' ? shownEvents.filter(e => e.point_person === p).length : null
+            if (p !== 'all' && count === 0) return null
+            return (
+              <button
+                key={p}
+                onClick={() => setActivePerson(p)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                  activePerson === p
+                    ? 'bg-stone-600 text-white dark:bg-stone-400 dark:text-stone-900'
+                    : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
+                }`}
+              >
+                {label}
+                {count !== null && <span className="ml-1.5 opacity-60">{count}</span>}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {loading && <p className="text-sm text-stone-400 text-center py-8">Loading timeline…</p>}
