@@ -296,10 +296,10 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
 
   return (
     <li className="group px-3 py-2.5">
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-start gap-2 min-w-0">
         <button
           onClick={() => onToggle(task)}
-          className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${task.completed ? 'bg-taupe-600 border-taupe-600' : 'border-stone-300 dark:border-stone-600 hover:border-taupe-600'}`}
+          className={`flex-shrink-0 mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${task.completed ? 'bg-taupe-600 border-taupe-600' : 'border-stone-300 dark:border-stone-600 hover:border-taupe-600'}`}
           aria-label={task.completed ? 'Mark incomplete' : 'Mark complete'}
         >
           {task.completed && (
@@ -321,7 +321,7 @@ function BTaskItem({ task, onToggle, onUpdate, onDelete }) {
         ) : (
           <span
             onClick={() => { setTitleDraft(task.title); setEditingTitle(true) }}
-            className={`flex-1 min-w-0 text-sm cursor-text truncate ${task.completed ? 'line-through text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}
+            className={`flex-1 min-w-0 text-sm cursor-text ${task.completed ? 'line-through text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}
           >
             {task.title}
           </span>
