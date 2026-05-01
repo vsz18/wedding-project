@@ -246,11 +246,41 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-stone-800 dark:text-stone-100">{event.title}</p>
               {event.location && <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{event.location}</p>}
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
+            {unlocked && (
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  onClick={() => setEditing(p => !p)}
+                  aria-label="Edit event"
+                  className={`transition-all ${editing ? 'text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-taupe-600 sm:opacity-0 sm:group-hover:opacity-100'}`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 1.5l3 3-7 7H2.5v-3l7-7z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  aria-label={confirmingDelete ? 'Confirm delete' : 'Delete event'}
+                  className={`transition-all sm:opacity-0 sm:group-hover:opacity-100 ${confirmingDelete ? 'text-red-500 scale-110' : 'text-stone-300 dark:text-stone-600 hover:text-red-400'}`}
+                >
+                  {confirmingDelete ? (
+                    <span className="text-xs font-medium leading-none">del?</span>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Badges row — wraps freely on mobile */}
+          {(event.point_person || event.category) && (
+            <div className="flex flex-wrap gap-1 mt-1">
               {event.point_person && (
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${POINT_PERSON_COLORS[event.point_person] || POINT_PERSON_COLORS.guest}`}>
                   {event.point_person === 'dj' ? 'DJ' : event.point_person.charAt(0).toUpperCase() + event.point_person.slice(1)}
@@ -261,34 +291,8 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
                   {cat.replace(/_/g, ' ')}
                 </span>
               ))}
-              {unlocked && (
-                <>
-                  <button
-                    onClick={() => setEditing(p => !p)}
-                    aria-label="Edit event"
-                    className={`transition-all ${editing ? 'text-taupe-600' : 'text-stone-300 dark:text-stone-600 hover:text-taupe-600 sm:opacity-0 sm:group-hover:opacity-100'}`}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 1.5l3 3-7 7H2.5v-3l7-7z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={handleDeleteClick}
-                    aria-label={confirmingDelete ? 'Confirm delete' : 'Delete event'}
-                    className={`transition-all sm:opacity-0 sm:group-hover:opacity-100 ${confirmingDelete ? 'text-red-500 scale-110' : 'text-stone-300 dark:text-stone-600 hover:text-red-400'}`}
-                  >
-                    {confirmingDelete ? (
-                      <span className="text-xs font-medium leading-none">del?</span>
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8 8M11 3l-8 8" />
-                      </svg>
-                    )}
-                  </button>
-                </>
-              )}
             </div>
-          </div>
+          )}
 
           {/* Meta row */}
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
