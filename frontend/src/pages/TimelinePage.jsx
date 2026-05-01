@@ -11,6 +11,7 @@ const CATEGORY_COLORS = {
   photos:         'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
   travel:         'bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300',
   cocktail_hour:  'bg-lime-50 text-lime-700 dark:bg-lime-900/50 dark:text-lime-300',
+  food:           'bg-orange-50 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300',
   vendor_arrival: 'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
   general:        'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
 }
@@ -28,11 +29,12 @@ const FILTERS = [
   { id: 'reception',      label: 'Reception' },
   { id: 'photos',         label: 'Photos' },
   { id: 'cocktail_hour',  label: 'Cocktail Hour' },
+  { id: 'food',           label: 'Food' },
   { id: 'travel',         label: 'Travel' },
   { id: 'vendor_arrival', label: 'Vendor Arrivals' },
 ]
 
-const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','reception','photos','travel','vendor_arrival','general']
+const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','food','reception','photos','travel','vendor_arrival','general']
 
 const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj','photographer']
 const POINT_PERSON_COLORS = {
