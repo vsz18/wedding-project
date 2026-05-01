@@ -25,7 +25,7 @@ function applyRipple(events) {
     const scheduledStartMins = timeToMins(ev.start_time)
 
     if (ev.locked) {
-      carryover = 0
+      // carryover passes through unchanged — downstream events still feel the ripple
       return {
         ...ev,
         incomingDelay: 0,
