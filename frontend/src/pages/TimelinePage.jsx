@@ -34,14 +34,15 @@ const FILTERS = [
 
 const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','reception','photos','travel','vendor_arrival','general']
 
-const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj']
+const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj','photographer']
 const POINT_PERSON_COLORS = {
-  bride:      'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
-  bridesmaid: 'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
-  groom:      'bg-sky-50 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300',
-  family:     'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
-  guest:      'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
-  dj:         'bg-violet-50 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
+  bride:        'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
+  bridesmaid:   'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+  groom:        'bg-sky-50 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300',
+  family:       'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+  guest:        'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
+  dj:           'bg-violet-50 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
+  photographer: 'bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300',
 }
 
 function parseCategories(raw) {
