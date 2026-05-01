@@ -15,7 +15,7 @@ import { VendorsPage } from './pages/VendorsPage.jsx'
 import { BridesmaidsPage } from './pages/BridesmaidsPage.jsx'
 
 export function App() {
-  const [tab, setTab]             = useState('tasks')
+  const [tab, setTab]             = useState('timeline')
   const [dayOfMode, setDayOfMode] = useState(() => localStorage.getItem('day-of-mode') === 'true')
   const { dark, toggle: toggleDark } = useDarkMode()
 

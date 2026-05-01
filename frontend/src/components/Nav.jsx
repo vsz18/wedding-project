@@ -1,8 +1,8 @@
 const ALL_TABS = [
-  { id: 'tasks',        label: 'Tasks' },
   { id: 'timeline',     label: 'Timeline' },
-  { id: 'packing',      label: 'Packing' },
+  { id: 'tasks',        label: 'Tasks' },
   { id: 'bridesmaids',  label: 'Bridesmaids' },
+  { id: 'packing',      label: 'Packing' },
   { id: 'vendors',      label: 'Team' },
 ]
 
