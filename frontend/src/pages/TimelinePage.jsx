@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTimeline } from '../hooks/useTimeline.js'
 import { useTimelineAuth } from '../hooks/useTimelineAuth.js'
 import { useDeleteUndo } from '../hooks/useDeleteUndo.js'
@@ -33,6 +33,23 @@ const FILTERS = [
 ]
 
 const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','reception','photos','travel','vendor_arrival','general']
+
+const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest']
+const POINT_PERSON_COLORS = {
+  bride:      'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
+  bridesmaid: 'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+  groom:      'bg-sky-50 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300',
+  family:     'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+  guest:      'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
+}
+
+function parseCategories(raw) {
+  if (!raw) return ['general']
+  return raw.split(',').map(s => s.trim()).filter(Boolean)
+}
+function serializeCategories(list) {
+  return list.length ? list.join(',') : 'general'
+}
 
 const INPUT = 'text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600'
 
@@ -70,6 +87,53 @@ function DurationInput({ value, onChange, label = 'How long will it last?' }) {
   )
 }
 
+function CategoryPicker({ value, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const selected = parseCategories(value)
+
+  useEffect(() => {
+    function handleClick(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function toggle(cat) {
+    const next = selected.includes(cat) ? selected.filter(c => c !== cat) : [...selected, cat]
+    onChange(serializeCategories(next.length ? next : ['general']))
+  }
+
+  const label = selected.length === 1
+    ? selected[0].replace(/_/g, ' ')
+    : `${selected.length} categories`
+
+  return (
+    <div ref={ref} className="relative flex flex-col gap-0.5">
+      <label className="text-xs text-stone-400 dark:text-stone-500">Category</label>
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className={`${INPUT} flex items-center gap-1.5 capitalize`}
+      >
+        <span className="flex-1 text-left">{label}</span>
+        <svg className="w-3 h-3 text-stone-400 flex-shrink-0" fill="none" viewBox="0 0 10 10" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2 4l3 3 3-3"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-20 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl shadow-lg py-1 min-w-[190px]">
+          {CATEGORY_OPTIONS.map(cat => (
+            <label key={cat} className="flex items-center gap-2 px-3 py-2 hover:bg-stone-50 dark:hover:bg-stone-700 cursor-pointer">
+              <input type="checkbox" checked={selected.includes(cat)} onChange={() => toggle(cat)} className="accent-taupe-600 w-3.5 h-3.5" />
+              <span className="text-xs text-stone-700 dark:text-stone-200 capitalize">{cat.replace(/_/g, ' ')}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function EventEditForm({ event, onSave, onCancel }) {
   const [form, setForm] = useState({
     title:         event.title,
@@ -80,6 +144,7 @@ function EventEditForm({ event, onSave, onCancel }) {
     category:      event.category ?? 'general',
     notes:         event.notes ?? '',
     delay_mins:    event.delay_mins ?? 0,
+    point_person:  event.point_person ?? '',
   })
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
@@ -105,8 +170,13 @@ function EventEditForm({ event, onSave, onCancel }) {
       </div>
       <div className="flex gap-2 flex-wrap">
         <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="Location" className={`flex-1 ${INPUT}`} />
-        <select value={form.category} onChange={e => set('category', e.target.value)} className={INPUT}>
-          {CATEGORY_OPTIONS.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
+        <CategoryPicker value={form.category} onChange={v => set('category', v)} />
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-xs text-stone-400 dark:text-stone-500">Point person</label>
+        <select value={form.point_person} onChange={e => set('point_person', e.target.value)} className={INPUT}>
+          <option value="">—</option>
+          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
         </select>
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional)" rows={2} className={`w-full ${INPUT} resize-none`} />
@@ -174,12 +244,17 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
               <p className="text-sm font-medium text-stone-800 dark:text-stone-100">{event.title}</p>
               {event.location && <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{event.location}</p>}
             </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              {event.category && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[event.category] || CATEGORY_COLORS.general}`}>
-                  {event.category.replace('_', ' ')}
+            <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
+              {event.point_person && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${POINT_PERSON_COLORS[event.point_person] || POINT_PERSON_COLORS.guest}`}>
+                  {event.point_person}
                 </span>
               )}
+              {parseCategories(event.category).map(cat => (
+                <span key={cat} className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${CATEGORY_COLORS[cat] || CATEGORY_COLORS.general}`}>
+                  {cat.replace(/_/g, ' ')}
+                </span>
+              ))}
               {unlocked && (
                 <>
                   <button
@@ -269,7 +344,7 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
 }
 
 function AddEventForm({ onAdd }) {
-  const EMPTY = { title: '', start_time: '', duration_mins: 30, buffer_mins: 0, location: '', category: 'general', notes: '' }
+  const EMPTY = { title: '', start_time: '', duration_mins: 30, buffer_mins: 0, location: '', category: 'general', notes: '', point_person: '' }
   const [open, setOpen]   = useState(false)
   const [form, setForm]   = useState(EMPTY)
   const [saving, setSaving] = useState(false)
@@ -306,8 +381,13 @@ function AddEventForm({ onAdd }) {
       </div>
       <div className="flex gap-2 flex-wrap">
         <input placeholder="Location" value={form.location} onChange={e => set('location', e.target.value)} className={`flex-1 ${INPUT}`} />
-        <select value={form.category} onChange={e => set('category', e.target.value)} className={INPUT}>
-          {CATEGORY_OPTIONS.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
+        <CategoryPicker value={form.category} onChange={v => set('category', v)} />
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-xs text-stone-400 dark:text-stone-500">Point person</label>
+        <select value={form.point_person} onChange={e => set('point_person', e.target.value)} className={INPUT}>
+          <option value="">—</option>
+          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
         </select>
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional) — e.g. who gives a speech, song for first dance…" rows={2} className={`w-full ${INPUT} resize-none`} />
@@ -358,7 +438,7 @@ export function TimelinePage() {
 
   const q = searchQuery.trim().toLowerCase()
   const visibleEvents = shownEvents
-    .filter(e => activeFilter === 'all' || e.category === activeFilter)
+    .filter(e => activeFilter === 'all' || parseCategories(e.category).includes(activeFilter))
     .filter(e => !q || e.title.toLowerCase().includes(q) || (e.location ?? '').toLowerCase().includes(q) || (e.notes ?? '').toLowerCase().includes(q))
 
   return (
@@ -444,7 +524,7 @@ export function TimelinePage() {
           >
             {f.label}
             {f.id !== 'all' && (
-              <span className="ml-1.5 opacity-60">{shownEvents.filter(e => e.category === f.id).length}</span>
+              <span className="ml-1.5 opacity-60">{shownEvents.filter(e => parseCategories(e.category).includes(f.id)).length}</span>
             )}
           </button>
         ))}
