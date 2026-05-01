@@ -34,13 +34,14 @@ const FILTERS = [
 
 const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','reception','photos','travel','vendor_arrival','general']
 
-const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest']
+const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj']
 const POINT_PERSON_COLORS = {
   bride:      'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
   bridesmaid: 'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
   groom:      'bg-sky-50 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300',
   family:     'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
   guest:      'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
+  dj:         'bg-violet-50 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
 }
 
 function parseCategories(raw) {
@@ -180,7 +181,7 @@ function EventEditForm({ event, onSave, onCancel }) {
         <label className="text-xs text-stone-400 dark:text-stone-500">Point person</label>
         <select value={form.point_person} onChange={e => set('point_person', e.target.value)} className={INPUT}>
           <option value="">—</option>
-          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
         </select>
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional)" rows={2} className={`w-full ${INPUT} resize-none`} />
@@ -251,8 +252,8 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
             </div>
             <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
               {event.point_person && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${POINT_PERSON_COLORS[event.point_person] || POINT_PERSON_COLORS.guest}`}>
-                  {event.point_person}
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${POINT_PERSON_COLORS[event.point_person] || POINT_PERSON_COLORS.guest}`}>
+                  {event.point_person === 'dj' ? 'DJ' : event.point_person.charAt(0).toUpperCase() + event.point_person.slice(1)}
                 </span>
               )}
               {parseCategories(event.category).map(cat => (
@@ -392,7 +393,7 @@ function AddEventForm({ onAdd }) {
         <label className="text-xs text-stone-400 dark:text-stone-500">Point person</label>
         <select value={form.point_person} onChange={e => set('point_person', e.target.value)} className={INPUT}>
           <option value="">—</option>
-          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
         </select>
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional) — e.g. who gives a speech, song for first dance…" rows={2} className={`w-full ${INPUT} resize-none`} />
