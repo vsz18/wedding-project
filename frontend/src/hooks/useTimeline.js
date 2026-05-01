@@ -27,7 +27,10 @@ function applyRipple(events) {
     const effectiveStartMins = scheduledStartMins + incomingDelay
 
     let status = 'on-time'
-    if (incomingDelay > 0) {
+    if (incomingDelay < 0) {
+      status = 'early'
+      carryover = incomingDelay
+    } else if (incomingDelay > 0) {
       if (incomingDelay <= ev.buffer_mins) {
         status = 'buffered'
         carryover = 0

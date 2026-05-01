@@ -18,6 +18,7 @@ const CATEGORY_COLORS = {
 
 const STATUS_STYLES = {
   'on-time':  { dot: 'bg-green-400',   card: '',                              badge: null },
+  'early':    { dot: 'bg-emerald-400', card: 'border-l-4 border-emerald-300', badge: () => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300', label: d => `Ahead ${Math.abs(d)}m` },
   'buffered': { dot: 'bg-yellow-400',  card: 'border-l-4 border-yellow-300', badge: () => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300', label: d => `Buffer absorbing +${d}m` },
   'delayed':  { dot: 'bg-orange-500',  card: 'border-l-4 border-orange-400', badge: () => 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300', label: d => `Ripple: +${d}m late` },
 }
@@ -253,7 +254,9 @@ function EventEditForm({ event, onSave, onCancel }) {
 function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
   const [editing, setEditing]         = useState(false)
   const [showNotes, setShowNotes]     = useState(false)
-  const [delayInput, setDelayInput]   = useState(String(event.delay_mins || 0))
+  const savedDelay = event.delay_mins || 0
+  const [lateInput,  setLateInput]  = useState(String(savedDelay > 0 ? savedDelay : 0))
+  const [earlyInput, setEarlyInput] = useState(String(savedDelay < 0 ? -savedDelay : 0))
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const deleteTimerRef = useRef(null)
 
@@ -268,12 +271,21 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
   }
 
   const st = STATUS_STYLES[event.status] || STATUS_STYLES['on-time']
-  const isDelayed = event.status !== 'on-time'
+  const isOffTime = event.status !== 'on-time'
 
-  function handleDelayBlur() {
-    const val = Math.max(0, parseInt(delayInput, 10) || 0)
-    setDelayInput(String(val))
+  function handleLateBlur() {
+    const val = Math.max(0, parseInt(lateInput, 10) || 0)
+    setLateInput(String(val))
+    setEarlyInput('0')
     if (val !== (event.delay_mins || 0)) onSetDelay(event.id, val)
+  }
+
+  function handleEarlyBlur() {
+    const val = Math.max(0, parseInt(earlyInput, 10) || 0)
+    setEarlyInput(String(val))
+    setLateInput('0')
+    const signed = val > 0 ? -val : 0
+    if (signed !== (event.delay_mins || 0)) onSetDelay(event.id, signed)
   }
 
   async function handleSave(id, data) {
@@ -286,11 +298,11 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
       <div className="flex items-start gap-3">
         {/* Time column */}
         <div className="flex-shrink-0 w-16 sm:w-20 text-right">
-          <span className={`text-sm font-medium ${isDelayed ? 'line-through text-stone-300 dark:text-stone-600' : 'text-stone-500 dark:text-stone-400'}`}>
+          <span className={`text-sm font-medium ${isOffTime ? 'line-through text-stone-300 dark:text-stone-600' : 'text-stone-500 dark:text-stone-400'}`}>
             {event.scheduledDisplay}
           </span>
-          {isDelayed && (
-            <div className="text-xs font-semibold text-orange-500">{event.effectiveStartDisplay}</div>
+          {isOffTime && (
+            <div className={`text-xs font-semibold ${event.status === 'early' ? 'text-emerald-500' : 'text-orange-500'}`}>{event.effectiveStartDisplay}</div>
           )}
         </div>
 
@@ -379,19 +391,33 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
 
           {/* Delay row — only visible when unlocked */}
           {unlocked && (
-            <div className="flex items-center gap-2 mt-2">
-              <label className="text-xs text-stone-400 dark:text-stone-500">Running late:</label>
-              <input
-                type="number" min={0} max={120}
-                value={delayInput}
-                onChange={e => setDelayInput(e.target.value)}
-                onBlur={handleDelayBlur}
-                onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                className="w-14 text-xs text-center border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-taupe-600"
-              />
-              <span className="text-xs text-stone-400 dark:text-stone-500">min</span>
-              {(event.delay_mins || 0) > 0 && (
-                <button onClick={() => { setDelayInput('0'); onSetDelay(event.id, 0) }} className="text-xs text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 underline">
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs text-stone-400 dark:text-stone-500">Late:</label>
+                <input
+                  type="number" min={0} max={120}
+                  value={lateInput}
+                  onChange={e => setLateInput(e.target.value)}
+                  onBlur={handleLateBlur}
+                  onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                  className="w-14 text-xs text-center border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-taupe-600"
+                />
+                <span className="text-xs text-stone-400 dark:text-stone-500">min</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs text-emerald-500">Early:</label>
+                <input
+                  type="number" min={0} max={120}
+                  value={earlyInput}
+                  onChange={e => setEarlyInput(e.target.value)}
+                  onBlur={handleEarlyBlur}
+                  onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                  className="w-14 text-xs text-center border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-stone-700 dark:text-stone-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+                <span className="text-xs text-stone-400 dark:text-stone-500">min</span>
+              </div>
+              {(event.delay_mins || 0) !== 0 && (
+                <button onClick={() => { setLateInput('0'); setEarlyInput('0'); onSetDelay(event.id, 0) }} className="text-xs text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 underline">
                   reset
                 </button>
               )}
@@ -494,6 +520,7 @@ export function TimelinePage() {
   const shownEvents   = events.filter(e => !hiddenIds.has(e.id))
   const delayed  = shownEvents.filter(e => e.status === 'delayed').length
   const buffered = shownEvents.filter(e => e.status === 'buffered').length
+  const early    = shownEvents.filter(e => e.status === 'early').length
 
   const q = searchQuery.trim().toLowerCase()
   const visibleEvents = shownEvents
@@ -528,7 +555,8 @@ export function TimelinePage() {
         <div className="flex gap-2 text-xs">
           {delayed  > 0 && <span className="px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 rounded-full font-medium">{delayed} ripple{delayed > 1 ? 's' : ''}</span>}
           {buffered > 0 && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300 rounded-full font-medium">{buffered} buffered</span>}
-          {delayed === 0 && buffered === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded-full font-medium">On schedule</span>}
+          {early    > 0 && <span className="px-2 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-full font-medium">{early} ahead</span>}
+          {delayed === 0 && buffered === 0 && early === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded-full font-medium">On schedule</span>}
         </div>
       </div>
 
