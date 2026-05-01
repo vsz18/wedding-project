@@ -52,6 +52,14 @@ function serializeCategories(list) {
   return list.length ? list.join(',') : 'general'
 }
 
+function parsePointPersons(raw) {
+  if (!raw) return []
+  return raw.split(',').map(s => s.trim()).filter(Boolean)
+}
+function serializePointPersons(list) {
+  return list.join(',')
+}
+
 const INPUT = 'text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600'
 
 function fmtDuration(mins) {
@@ -135,6 +143,55 @@ function CategoryPicker({ value, onChange }) {
   )
 }
 
+function PointPersonPicker({ value, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const selected = parsePointPersons(value)
+
+  useEffect(() => {
+    function handleClick(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function toggle(person) {
+    const next = selected.includes(person) ? selected.filter(p => p !== person) : [...selected, person]
+    onChange(serializePointPersons(next))
+  }
+
+  const label = selected.length === 0
+    ? '—'
+    : selected.length === 1
+      ? (selected[0] === 'dj' ? 'DJ' : selected[0].charAt(0).toUpperCase() + selected[0].slice(1))
+      : `${selected.length} people`
+
+  return (
+    <div ref={ref} className="relative flex flex-col gap-0.5">
+      <label className="text-xs text-stone-400 dark:text-stone-500">Point person</label>
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className={`${INPUT} flex items-center gap-1.5`}
+      >
+        <span className="flex-1 text-left">{label}</span>
+        <svg className="w-3 h-3 text-stone-400 flex-shrink-0" fill="none" viewBox="0 0 10 10" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2 4l3 3 3-3"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-20 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl shadow-lg py-1 min-w-[160px]">
+          {POINT_PERSON_OPTIONS.map(person => (
+            <label key={person} className="flex items-center gap-2 px-3 py-2 hover:bg-stone-50 dark:hover:bg-stone-700 cursor-pointer">
+              <input type="checkbox" checked={selected.includes(person)} onChange={() => toggle(person)} className="accent-taupe-600 w-3.5 h-3.5" />
+              <span className="text-xs text-stone-700 dark:text-stone-200">{person === 'dj' ? 'DJ' : person.charAt(0).toUpperCase() + person.slice(1)}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function EventEditForm({ event, onSave, onCancel }) {
   const [form, setForm] = useState({
     title:         event.title,
@@ -176,13 +233,7 @@ function EventEditForm({ event, onSave, onCancel }) {
       <div className="flex gap-2 flex-wrap">
         <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="Location" className={`flex-1 ${INPUT}`} />
         <CategoryPicker value={form.category} onChange={v => set('category', v)} />
-      </div>
-      <div className="flex flex-col gap-0.5">
-        <label className="text-xs text-stone-400 dark:text-stone-500">Point person</label>
-        <select value={form.point_person} onChange={e => set('point_person', e.target.value)} className={INPUT}>
-          <option value="">—</option>
-          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
-        </select>
+        <PointPersonPicker value={form.point_person} onChange={v => set('point_person', v)} />
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional)" rows={2} className={`w-full ${INPUT} resize-none`} />
       {saveError && <p className="text-xs text-red-500">{saveError}</p>}
@@ -303,11 +354,11 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
           {/* Badges row — wraps freely on mobile */}
           {(event.point_person || event.category) && (
             <div className="flex flex-wrap gap-1 mt-1.5">
-              {event.point_person && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${POINT_PERSON_COLORS[event.point_person] || POINT_PERSON_COLORS.guest}`}>
-                  {event.point_person === 'dj' ? 'DJ' : event.point_person.charAt(0).toUpperCase() + event.point_person.slice(1)}
+              {parsePointPersons(event.point_person).map(person => (
+                <span key={person} className={`text-xs px-2 py-0.5 rounded-full font-medium ${POINT_PERSON_COLORS[person] || POINT_PERSON_COLORS.guest}`}>
+                  {person === 'dj' ? 'DJ' : person.charAt(0).toUpperCase() + person.slice(1)}
                 </span>
-              )}
+              ))}
               {parseCategories(event.category).map(cat => (
                 <span key={cat} className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${CATEGORY_COLORS[cat] || CATEGORY_COLORS.general}`}>
                   {cat.replace(/_/g, ' ')}
@@ -392,13 +443,7 @@ function AddEventForm({ onAdd }) {
       <div className="flex gap-2 flex-wrap">
         <input placeholder="Location" value={form.location} onChange={e => set('location', e.target.value)} className={`flex-1 ${INPUT}`} />
         <CategoryPicker value={form.category} onChange={v => set('category', v)} />
-      </div>
-      <div className="flex flex-col gap-0.5">
-        <label className="text-xs text-stone-400 dark:text-stone-500">Point person</label>
-        <select value={form.point_person} onChange={e => set('point_person', e.target.value)} className={INPUT}>
-          <option value="">—</option>
-          {POINT_PERSON_OPTIONS.map(p => <option key={p} value={p}>{p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
-        </select>
+        <PointPersonPicker value={form.point_person} onChange={v => set('point_person', v)} />
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional) — e.g. who gives a speech, song for first dance…" rows={2} className={`w-full ${INPUT} resize-none`} />
       <div className="flex justify-end gap-2">
@@ -450,7 +495,7 @@ export function TimelinePage() {
   const q = searchQuery.trim().toLowerCase()
   const visibleEvents = shownEvents
     .filter(e => activeFilter === 'all' || parseCategories(e.category).includes(activeFilter))
-    .filter(e => activePerson === 'all' || e.point_person === activePerson)
+    .filter(e => activePerson === 'all' || parsePointPersons(e.point_person).includes(activePerson))
     .filter(e => !q || e.title.toLowerCase().includes(q) || (e.location ?? '').toLowerCase().includes(q) || (e.notes ?? '').toLowerCase().includes(q))
 
   return (
@@ -551,7 +596,7 @@ export function TimelinePage() {
         <div className="flex gap-1.5 flex-wrap">
           {['all', ...POINT_PERSON_OPTIONS].map(p => {
             const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p.charAt(0).toUpperCase() + p.slice(1)
-            const count = p !== 'all' ? shownEvents.filter(e => e.point_person === p).length : null
+            const count = p !== 'all' ? shownEvents.filter(e => parsePointPersons(e.point_person).includes(p)).length : null
             if (p !== 'all' && count === 0) return null
             return (
               <button
