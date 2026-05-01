@@ -203,7 +203,7 @@ export function VendorsPage({ readOnly = false }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Vendors</h2>
+        <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Team</h2>
         <span className="text-xs text-stone-400 dark:text-stone-500">{vendors.length} vendor{vendors.length !== 1 ? 's' : ''}</span>
       </div>
 
