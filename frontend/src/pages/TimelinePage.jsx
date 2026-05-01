@@ -10,6 +10,7 @@ const CATEGORY_COLORS = {
   reception:      'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
   photos:         'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
   travel:         'bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300',
+  cocktail_hour:  'bg-lime-50 text-lime-700 dark:bg-lime-900/50 dark:text-lime-300',
   vendor_arrival: 'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
   general:        'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
 }
@@ -26,11 +27,12 @@ const FILTERS = [
   { id: 'ceremony',       label: 'Ceremony' },
   { id: 'reception',      label: 'Reception' },
   { id: 'photos',         label: 'Photos' },
+  { id: 'cocktail_hour',  label: 'Cocktail Hour' },
   { id: 'travel',         label: 'Travel' },
   { id: 'vendor_arrival', label: 'Vendor Arrivals' },
 ]
 
-const CATEGORY_OPTIONS = ['getting_ready','ceremony','reception','photos','travel','vendor_arrival','general']
+const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','reception','photos','travel','vendor_arrival','general']
 
 const INPUT = 'text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600'
 
