@@ -13,6 +13,7 @@ import { TimelinePage } from './pages/TimelinePage.jsx'
 import { PackingPage } from './pages/PackingPage.jsx'
 import { VendorsPage } from './pages/VendorsPage.jsx'
 import { BridesmaidsPage } from './pages/BridesmaidsPage.jsx'
+import { SeatingPage } from './pages/SeatingPage.jsx'
 
 export function App() {
   const [tab, setTab]             = useState('timeline')
@@ -87,6 +88,7 @@ export function App() {
       {tab === 'packing'     && !dayOfMode && <PackingPage />}
       {tab === 'bridesmaids' && !dayOfMode && <BridesmaidsPage />}
       {tab === 'vendors'     && <VendorsPage />}
+      {tab === 'seating'     && <SeatingPage />}
     </div>
   )
 }

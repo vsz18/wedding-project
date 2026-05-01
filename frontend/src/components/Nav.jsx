@@ -4,6 +4,7 @@ const ALL_TABS = [
   { id: 'bridesmaids',  label: 'Bridesmaids' },
   { id: 'packing',      label: 'Packing' },
   { id: 'vendors',      label: 'Team' },
+  { id: 'seating',      label: 'Seating' },
 ]
 
 const DAY_OF_TABS = new Set(['timeline', 'vendors'])
