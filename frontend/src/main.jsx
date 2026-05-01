@@ -3,11 +3,14 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { App } from './App.jsx'
 import { VendorView } from './pages/VendorView.jsx'
+import { HbicPage } from './pages/HbicPage.jsx'
 
-const isVendorView = window.location.pathname.startsWith('/team')
+const path = window.location.pathname
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {isVendorView ? <VendorView /> : <App />}
+    {path.startsWith('/team')  ? <VendorView /> :
+     path.startsWith('/hbic')  ? <HbicPage />   :
+     <App />}
   </StrictMode>,
 )
