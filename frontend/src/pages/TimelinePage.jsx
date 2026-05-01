@@ -146,12 +146,16 @@ function EventEditForm({ event, onSave, onCancel }) {
     delay_mins:    event.delay_mins ?? 0,
     point_person:  event.point_person ?? '',
   })
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving]     = useState(false)
+  const [saveError, setSaveError] = useState(null)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
   async function handleSave() {
     setSaving(true)
-    try { await onSave(event.id, form) } finally { setSaving(false) }
+    setSaveError(null)
+    try { await onSave(event.id, form) }
+    catch { setSaveError('Save failed — check your connection and try again.') }
+    finally { setSaving(false) }
   }
 
   return (
@@ -180,6 +184,7 @@ function EventEditForm({ event, onSave, onCancel }) {
         </select>
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional)" rows={2} className={`w-full ${INPUT} resize-none`} />
+      {saveError && <p className="text-xs text-red-500">{saveError}</p>}
       <div className="flex justify-end gap-2">
         <button onClick={onCancel} className="text-sm text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-stone-600 dark:hover:text-stone-300">Cancel</button>
         <button onClick={handleSave} disabled={saving} className="text-sm bg-taupe-600 text-white px-4 py-1.5 rounded-lg hover:bg-taupe-700 disabled:opacity-40 transition-colors">
