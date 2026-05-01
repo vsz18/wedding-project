@@ -278,22 +278,6 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
             )}
           </div>
 
-          {/* Badges row — wraps freely on mobile */}
-          {(event.point_person || event.category) && (
-            <div className="flex flex-wrap gap-1 mt-1">
-              {event.point_person && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${POINT_PERSON_COLORS[event.point_person] || POINT_PERSON_COLORS.guest}`}>
-                  {event.point_person === 'dj' ? 'DJ' : event.point_person.charAt(0).toUpperCase() + event.point_person.slice(1)}
-                </span>
-              )}
-              {parseCategories(event.category).map(cat => (
-                <span key={cat} className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${CATEGORY_COLORS[cat] || CATEGORY_COLORS.general}`}>
-                  {cat.replace(/_/g, ' ')}
-                </span>
-              ))}
-            </div>
-          )}
-
           {/* Meta row */}
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             {event.duration_mins > 0 && <span className="text-xs text-stone-400 dark:text-stone-500">{fmtDuration(event.duration_mins)}</span>}
@@ -315,6 +299,22 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
               </button>
             )}
           </div>
+
+          {/* Badges row — wraps freely on mobile */}
+          {(event.point_person || event.category) && (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {event.point_person && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${POINT_PERSON_COLORS[event.point_person] || POINT_PERSON_COLORS.guest}`}>
+                  {event.point_person === 'dj' ? 'DJ' : event.point_person.charAt(0).toUpperCase() + event.point_person.slice(1)}
+                </span>
+              )}
+              {parseCategories(event.category).map(cat => (
+                <span key={cat} className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${CATEGORY_COLORS[cat] || CATEGORY_COLORS.general}`}>
+                  {cat.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Notes dropdown */}
           {event.notes && showNotes && (
