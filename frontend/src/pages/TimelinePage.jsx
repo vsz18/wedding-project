@@ -207,6 +207,7 @@ function EventEditForm({ event, onSave, onCancel }) {
     notes:         event.notes ?? '',
     delay_mins:    event.delay_mins ?? 0,
     point_person:  event.point_person ?? '',
+    locked:        event.locked ?? false,
   })
   const [saving, setSaving]     = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -240,6 +241,10 @@ function EventEditForm({ event, onSave, onCancel }) {
         <PointPersonPicker value={form.point_person} onChange={v => set('point_person', v)} />
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional)" rows={2} className={`w-full ${INPUT} resize-none`} />
+      <label className="flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" checked={form.locked} onChange={e => set('locked', e.target.checked)} className="accent-taupe-600 w-3.5 h-3.5" />
+        <span className="text-xs text-stone-500 dark:text-stone-400">Lock to scheduled time <span className="text-stone-400 dark:text-stone-500">(ignores ripple)</span></span>
+      </label>
       {saveError && <p className="text-xs text-red-500">{saveError}</p>}
       <div className="flex justify-end gap-2">
         <button onClick={onCancel} className="text-sm text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-stone-600 dark:hover:text-stone-300">Cancel</button>
@@ -313,7 +318,15 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-stone-800 dark:text-stone-100">{event.title}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium text-stone-800 dark:text-stone-100">{event.title}</p>
+                {event.locked && (
+                  <svg className="w-3 h-3 text-stone-400 dark:text-stone-500 flex-shrink-0" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth={1.8}>
+                    <rect x="2" y="5.5" width="8" height="5" rx="1" />
+                    <path strokeLinecap="round" d="M4 5.5V4a2 2 0 0 1 4 0v1.5" />
+                  </svg>
+                )}
+              </div>
               {event.location && <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{event.location}</p>}
             </div>
             {unlocked && (
@@ -389,8 +402,8 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
             </p>
           )}
 
-          {/* Delay row — only visible when unlocked */}
-          {unlocked && (
+          {/* Delay row — only visible when unlocked and event is not locked */}
+          {unlocked && !event.locked && (
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <label className="text-xs text-stone-400 dark:text-stone-500">Late:</label>
@@ -434,7 +447,7 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
 }
 
 function AddEventForm({ onAdd }) {
-  const EMPTY = { title: '', start_time: '', duration_mins: 30, buffer_mins: 0, location: '', category: 'general', notes: '', point_person: '' }
+  const EMPTY = { title: '', start_time: '', duration_mins: 30, buffer_mins: 0, location: '', category: 'general', notes: '', point_person: '', locked: false }
   const [open, setOpen]   = useState(false)
   const [form, setForm]   = useState(EMPTY)
   const [saving, setSaving] = useState(false)
@@ -475,6 +488,10 @@ function AddEventForm({ onAdd }) {
         <PointPersonPicker value={form.point_person} onChange={v => set('point_person', v)} />
       </div>
       <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional) — e.g. who gives a speech, song for first dance…" rows={2} className={`w-full ${INPUT} resize-none`} />
+      <label className="flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" checked={form.locked} onChange={e => set('locked', e.target.checked)} className="accent-taupe-600 w-3.5 h-3.5" />
+        <span className="text-xs text-stone-500 dark:text-stone-400">Lock to scheduled time <span className="text-stone-400 dark:text-stone-500">(ignores ripple)</span></span>
+      </label>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={() => setOpen(false)} className="text-sm text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-stone-600 dark:hover:text-stone-300">Cancel</button>
         <button type="submit" disabled={saving} className="text-sm bg-taupe-600 text-white px-4 py-1.5 rounded-lg hover:bg-taupe-700 disabled:opacity-40 transition-colors">{saving ? 'Adding…' : 'Add event'}</button>

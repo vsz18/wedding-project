@@ -22,8 +22,21 @@ function minsToTime(mins) {
 function applyRipple(events) {
   let carryover = 0
   return events.map(ev => {
-    const incomingDelay = carryover + (ev.delay_mins || 0)
     const scheduledStartMins = timeToMins(ev.start_time)
+
+    if (ev.locked) {
+      carryover = 0
+      return {
+        ...ev,
+        incomingDelay: 0,
+        effectiveStartMins: scheduledStartMins,
+        effectiveStartDisplay: minsToTime(scheduledStartMins),
+        scheduledDisplay: minsToTime(scheduledStartMins),
+        status: 'on-time',
+      }
+    }
+
+    const incomingDelay = carryover + (ev.delay_mins || 0)
     const effectiveStartMins = scheduledStartMins + incomingDelay
 
     let status = 'on-time'
