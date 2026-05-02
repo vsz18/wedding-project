@@ -21,7 +21,7 @@ export function App() {
   const { dark, toggle: toggleDark } = useDarkMode()
 
   const { tasks, loading, error, addTask, toggleTask, updateTask, deleteTask, reorderTasks } = useTasks()
-  const { weddingDate, setWeddingDate, daysRemaining } = useWeddingDate()
+  const { daysRemaining } = useWeddingDate()
   const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteTask)
 
   const visibleTasks   = tasks.filter(t => !hiddenIds.has(t.id))
@@ -44,12 +44,7 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-900 font-sans transition-colors">
-      <CountdownHeader
-        daysRemaining={daysRemaining}
-        weddingDate={weddingDate}
-        onDateChange={setWeddingDate}
-        dayOfMode={dayOfMode}
-      />
+      <CountdownHeader daysRemaining={daysRemaining} dayOfMode={dayOfMode} />
 
       <Nav
         active={tab}
