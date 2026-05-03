@@ -3,6 +3,17 @@ import { useDarkMode } from '../hooks/useDarkMode.js'
 import { TimelinePage } from './TimelinePage.jsx'
 import { VendorsPage } from './VendorsPage.jsx'
 
+const ROLE_META = {
+  bride:        { label: 'Bride' },
+  bridesmaid:   { label: 'Bridesmaids' },
+  groom:        { label: 'Groom' },
+  family:       { label: 'Family' },
+  guest:        { label: 'Guests' },
+  dj:           { label: 'DJ' },
+  photographer: { label: 'Photographer' },
+  venue:        { label: 'Venue' },
+}
+
 function SunIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -19,18 +30,21 @@ function MoonIcon() {
   )
 }
 
-export function VendorView() {
+export function VendorView({ personFilter = null }) {
   const [tab, setTab] = useState('timeline')
   const { dark, toggle: toggleDark } = useDarkMode()
 
+  const role = personFilter && ROLE_META[personFilter] ? ROLE_META[personFilter] : null
+
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-900 font-sans transition-colors">
-      {/* Header */}
       <div className="bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-0 flex items-center justify-between">
           <div>
             <h1 className="font-serif text-xl text-stone-800 dark:text-stone-100">Scott-Zhang Wedding</h1>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">May 30, 2026</p>
+            <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+              {role ? `${role.label} · May 30, 2026` : 'May 30, 2026'}
+            </p>
           </div>
           <button
             onClick={toggleDark}
@@ -41,26 +55,33 @@ export function VendorView() {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="max-w-2xl mx-auto px-4 flex gap-0.5">
-          {['timeline', 'vendors'].map(id => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors capitalize ${
-                tab === id
-                  ? 'border-taupe-600 text-taupe-600'
-                  : 'border-transparent text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
-              }`}
-            >
-              {id === 'timeline' ? 'Timeline' : 'Team'}
-            </button>
-          ))}
-        </div>
+        {/* Only show tabs on the full /team view */}
+        {!role && (
+          <div className="max-w-2xl mx-auto px-4 flex gap-0.5">
+            {['timeline', 'vendors'].map(id => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+                  tab === id
+                    ? 'border-taupe-600 text-taupe-600'
+                    : 'border-transparent text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
+                }`}
+              >
+                {id === 'timeline' ? 'Timeline' : 'Team'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {tab === 'timeline' && <TimelinePage />}
-      {tab === 'vendors'  && <VendorsPage readOnly />}
+      {role
+        ? <TimelinePage personFilter={personFilter} />
+        : <>
+            {tab === 'timeline' && <TimelinePage />}
+            {tab === 'vendors'  && <VendorsPage readOnly />}
+          </>
+      }
     </div>
   )
 }

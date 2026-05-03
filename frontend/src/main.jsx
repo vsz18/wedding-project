@@ -5,9 +5,12 @@ import { App } from './App.jsx'
 import { VendorView } from './pages/VendorView.jsx'
 
 const path = window.location.pathname
+const personFilter = path.startsWith('/team/')
+  ? (path.slice('/team/'.length) || null)
+  : null
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {path.startsWith('/team') ? <VendorView /> : <App />}
+    {path.startsWith('/team') ? <VendorView personFilter={personFilter} /> : <App />}
   </StrictMode>,
 )

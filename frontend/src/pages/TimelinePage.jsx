@@ -37,7 +37,7 @@ const FILTERS = [
 
 const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','food','reception','photos','travel','vendor_arrival','general']
 
-const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj','photographer']
+const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj','photographer','venue']
 const POINT_PERSON_COLORS = {
   bride:        'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
   bridesmaid:   'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
@@ -46,6 +46,7 @@ const POINT_PERSON_COLORS = {
   guest:        'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
   dj:           'bg-violet-50 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
   photographer: 'bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300',
+  venue:        'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
 }
 
 function parseCategories(raw) {
@@ -500,11 +501,11 @@ function AddEventForm({ onAdd }) {
   )
 }
 
-export function TimelinePage() {
+export function TimelinePage({ personFilter = null }) {
   const { events, loading, error, setDelay, updateEvent, addEvent, deleteEvent } = useTimeline()
   const { unlocked, unlock, lock, error: pinError, clearError } = useTimelineAuth()
   const [activeFilter, setActiveFilter] = useState('all')
-  const [activePerson, setActivePerson] = useState('all')
+  const [activePerson, setActivePerson] = useState(personFilter || 'all')
   const [searchQuery, setSearchQuery]   = useState('')
   const [showPinInput, setShowPinInput] = useState(false)
   const [pinDraft, setPinDraft]         = useState('')
@@ -638,8 +639,8 @@ export function TimelinePage() {
         </div>
       </div>
 
-      {/* Point person filter */}
-      <div className="mb-5">
+      {/* Point person filter — hidden when a role is pre-set via personFilter */}
+      {!personFilter && <div className="mb-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">Point Person</p>
         <div className="flex gap-1.5 flex-wrap">
           {['all', ...POINT_PERSON_OPTIONS].map(p => {
@@ -662,7 +663,7 @@ export function TimelinePage() {
             )
           })}
         </div>
-      </div>
+      </div>}
 
       {loading && <p className="text-sm text-stone-400 text-center py-8">Loading timeline…</p>}
       {error   && <p className="text-sm text-red-400 text-center py-8">{error}</p>}
