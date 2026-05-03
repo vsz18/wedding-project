@@ -55,33 +55,25 @@ export function VendorView({ personFilter = null }) {
           </button>
         </div>
 
-        {/* Only show tabs on the full /team view */}
-        {!role && (
-          <div className="max-w-2xl mx-auto px-4 flex gap-0.5">
-            {['timeline', 'vendors'].map(id => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-                  tab === id
-                    ? 'border-taupe-600 text-taupe-600'
-                    : 'border-transparent text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
-                }`}
-              >
-                {id === 'timeline' ? 'Timeline' : 'Team'}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="max-w-2xl mx-auto px-4 flex gap-0.5">
+          {['timeline', 'vendors'].map(id => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+                tab === id
+                  ? 'border-taupe-600 text-taupe-600'
+                  : 'border-transparent text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
+              }`}
+            >
+              {id === 'timeline' ? 'Timeline' : 'Team'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {role
-        ? <TimelinePage personFilter={personFilter} />
-        : <>
-            {tab === 'timeline' && <TimelinePage />}
-            {tab === 'vendors'  && <VendorsPage readOnly />}
-          </>
-      }
+      {tab === 'timeline' && <TimelinePage personFilter={personFilter} />}
+      {tab === 'vendors'  && <VendorsPage readOnly />}
     </div>
   )
 }
