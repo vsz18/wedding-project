@@ -13,6 +13,7 @@ const CATEGORY_COLORS = {
   cocktail_hour:  'bg-lime-50 text-lime-700 dark:bg-lime-900/50 dark:text-lime-300',
   food:           'bg-orange-50 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300',
   vendor_arrival: 'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
+  rehearsal:      'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
   general:        'bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300',
 }
 
@@ -32,10 +33,11 @@ const FILTERS = [
   { id: 'cocktail_hour',  label: 'Cocktail Hour' },
   { id: 'food',           label: 'Food' },
   { id: 'travel',         label: 'Travel' },
+  { id: 'rehearsal',      label: 'Rehearsal' },
   { id: 'vendor_arrival', label: 'Vendor Arrivals' },
 ]
 
-const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','food','reception','photos','travel','vendor_arrival','general']
+const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','food','reception','photos','travel','vendor_arrival','rehearsal','general']
 
 const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj','photographer','venue']
 const POINT_PERSON_COLORS = {
@@ -668,17 +670,40 @@ export function TimelinePage({ personFilter = null }) {
       {loading && <p className="text-sm text-stone-400 text-center py-8">Loading timeline…</p>}
       {error   && <p className="text-sm text-red-400 text-center py-8">{error}</p>}
 
-      {!loading && !error && (
-        <div className="space-y-2">
-          {activeFilter === 'all' && unlocked && <AddEventForm onAdd={addEvent} />}
-          {visibleEvents.length === 0 && (
-            <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No events match these filters.</p>
-          )}
-          {visibleEvents.map(ev => (
-            <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} />
-          ))}
-        </div>
-      )}
+      {!loading && !error && (() => {
+        const rehearsalEvents = visibleEvents.filter(e => parseCategories(e.category).includes('rehearsal'))
+        const weddingEvents   = visibleEvents.filter(e => !parseCategories(e.category).includes('rehearsal'))
+        const hasRehearsal    = rehearsalEvents.length > 0
+
+        return (
+          <div className="space-y-2">
+            {activeFilter === 'all' && unlocked && <AddEventForm onAdd={addEvent} />}
+            {visibleEvents.length === 0 && (
+              <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No events match these filters.</p>
+            )}
+
+            {hasRehearsal && (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 pt-2 pb-1">
+                  May 29 · Rehearsal
+                </p>
+                {rehearsalEvents.map(ev => (
+                  <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} />
+                ))}
+                {weddingEvents.length > 0 && (
+                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 pt-4 pb-1">
+                    May 30 · Wedding Day
+                  </p>
+                )}
+              </>
+            )}
+
+            {weddingEvents.map(ev => (
+              <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} />
+            ))}
+          </div>
+        )
+      })()}
       {pendingDelete && <UndoToast label={pendingDelete.label} onUndo={undoDelete} />}
     </div>
   )

@@ -17,11 +17,20 @@ function minsToTime(mins) {
   return `${h12}:${String(m).padStart(2, '0')} ${period}`
 }
 
+function isRehearsal(ev) {
+  if (!ev.category) return false
+  return ev.category.split(',').map(s => s.trim()).includes('rehearsal')
+}
+
 /** Calculates ripple status for each event.
- *  carryover: excess delay (mins) not absorbed by previous event's buffer */
+ *  Rehearsal and wedding-day events run separate ripple chains. */
 function applyRipple(events) {
   let carryover = 0
+  let currentGroup = null
   return events.map(ev => {
+    const group = isRehearsal(ev) ? 'rehearsal' : 'wedding'
+    if (currentGroup !== null && group !== currentGroup) carryover = 0
+    currentGroup = group
     const scheduledStartMins = timeToMins(ev.start_time)
 
     if (ev.locked) {
