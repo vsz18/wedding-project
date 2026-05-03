@@ -3,6 +3,7 @@ import { useDarkMode } from '../hooks/useDarkMode.js'
 import { TimelinePage } from './TimelinePage.jsx'
 import { VendorsPage } from './VendorsPage.jsx'
 import { BridesmaidsPage } from './BridesmaidsPage.jsx'
+import { PackingPage } from './PackingPage.jsx'
 
 const ROLE_META = {
   bride:        { label: 'Bride' },
@@ -59,7 +60,7 @@ export function VendorView({ personFilter = null }) {
         <div className="max-w-2xl mx-auto px-4 flex gap-0.5">
           {[
             { id: 'timeline',     label: 'Timeline' },
-            ...(personFilter === 'bridesmaid' ? [{ id: 'bridesmaids', label: 'Bridesmaids' }] : []),
+            ...(personFilter === 'bridesmaid' ? [{ id: 'bridesmaids', label: 'Bridesmaids' }, { id: 'packing', label: 'Packing' }] : []),
             { id: 'vendors',      label: 'Team' },
           ].map(t => (
             <button
@@ -79,6 +80,7 @@ export function VendorView({ personFilter = null }) {
 
       {tab === 'timeline'    && <TimelinePage personFilter={personFilter} />}
       {tab === 'bridesmaids' && <BridesmaidsPage />}
+      {tab === 'packing'     && <PackingPage />}
       {tab === 'vendors'     && <VendorsPage readOnly />}
     </div>
   )
