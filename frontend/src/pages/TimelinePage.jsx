@@ -622,22 +622,29 @@ export function TimelinePage({ personFilter = null }) {
       <div className="mb-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">Category</p>
         <div className="flex gap-1.5 flex-wrap">
-          {FILTERS.map(f => (
-            <button
-              key={f.id}
-              onClick={() => setActiveFilter(f.id)}
-              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-                activeFilter === f.id
-                  ? 'bg-taupe-600 text-white'
-                  : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
-              }`}
-            >
-              {f.label}
-              {f.id !== 'all' && (
-                <span className="ml-1.5 opacity-60">{shownEvents.filter(e => parseCategories(e.category).includes(f.id)).length}</span>
-              )}
-            </button>
-          ))}
+          {FILTERS.map(f => {
+            const count = f.id !== 'all'
+              ? shownEvents
+                  .filter(e => !personFilter || parsePointPersons(e.point_person).includes(personFilter))
+                  .filter(e => parseCategories(e.category).includes(f.id))
+                  .length
+              : null
+            if (personFilter && f.id !== 'all' && count === 0) return null
+            return (
+              <button
+                key={f.id}
+                onClick={() => setActiveFilter(f.id)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                  activeFilter === f.id
+                    ? 'bg-taupe-600 text-white'
+                    : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
+                }`}
+              >
+                {f.label}
+                {count !== null && <span className="ml-1.5 opacity-60">{count}</span>}
+              </button>
+            )
+          })}
         </div>
       </div>
 
