@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useDarkMode } from '../hooks/useDarkMode.js'
 import { TimelinePage } from './TimelinePage.jsx'
 import { VendorsPage } from './VendorsPage.jsx'
+import { BridesmaidsPage } from './BridesmaidsPage.jsx'
 
 const ROLE_META = {
   bride:        { label: 'Bride' },
@@ -56,24 +57,29 @@ export function VendorView({ personFilter = null }) {
         </div>
 
         <div className="max-w-2xl mx-auto px-4 flex gap-0.5">
-          {['timeline', 'vendors'].map(id => (
+          {[
+            { id: 'timeline',     label: 'Timeline' },
+            ...(personFilter === 'bridesmaid' ? [{ id: 'bridesmaids', label: 'Bridesmaids' }] : []),
+            { id: 'vendors',      label: 'Team' },
+          ].map(t => (
             <button
-              key={id}
-              onClick={() => setTab(id)}
+              key={t.id}
+              onClick={() => setTab(t.id)}
               className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-                tab === id
+                tab === t.id
                   ? 'border-taupe-600 text-taupe-600'
                   : 'border-transparent text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
               }`}
             >
-              {id === 'timeline' ? 'Timeline' : 'Team'}
+              {t.label}
             </button>
           ))}
         </div>
       </div>
 
-      {tab === 'timeline' && <TimelinePage personFilter={personFilter} />}
-      {tab === 'vendors'  && <VendorsPage readOnly />}
+      {tab === 'timeline'    && <TimelinePage personFilter={personFilter} />}
+      {tab === 'bridesmaids' && <BridesmaidsPage />}
+      {tab === 'vendors'     && <VendorsPage readOnly />}
     </div>
   )
 }
