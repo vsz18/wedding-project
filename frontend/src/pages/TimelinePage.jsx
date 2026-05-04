@@ -260,7 +260,7 @@ function EventEditForm({ event, onSave, onCancel }) {
   )
 }
 
-function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
+function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked, selectMode = false, selected = false, onSelect }) {
   const [editing, setEditing]         = useState(false)
   const [showNotes, setShowNotes]     = useState(false)
   const savedDelay = event.delay_mins || 0
@@ -303,8 +303,17 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
   }
 
   return (
-    <div className={`group relative bg-white dark:bg-stone-800 rounded-xl shadow-sm p-4 ${st.card}`}>
+    <div
+      className={`group relative bg-white dark:bg-stone-800 rounded-xl shadow-sm p-4 ${st.card} ${selectMode ? 'cursor-pointer' : ''} ${selected ? 'ring-2 ring-taupe-600' : ''}`}
+      onClick={selectMode ? onSelect : undefined}
+    >
       <div className="flex items-start gap-3">
+        {/* Select checkbox */}
+        {selectMode && (
+          <div className={`flex-shrink-0 mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${selected ? 'bg-taupe-600 border-taupe-600' : 'border-stone-300 dark:border-stone-600'}`}>
+            {selected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2 6l3 3 5-5"/></svg>}
+          </div>
+        )}
         {/* Time column */}
         <div className="flex-shrink-0 w-16 sm:w-20 text-right">
           <span className={`text-sm font-medium ${isOffTime ? 'line-through text-stone-300 dark:text-stone-600' : 'text-stone-500 dark:text-stone-400'}`}>
@@ -333,7 +342,7 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
               </div>
               {event.location && <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{event.location}</p>}
             </div>
-            {unlocked && (
+            {unlocked && !selectMode && (
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   onClick={() => setEditing(p => !p)}
@@ -406,8 +415,8 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
             </p>
           )}
 
-          {/* Delay row — only visible when unlocked and event is not locked */}
-          {unlocked && !event.locked && (
+          {/* Delay row — only visible when unlocked, not locked, and not in select mode */}
+          {unlocked && !event.locked && !selectMode && (
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <label className="text-xs text-stone-400 dark:text-stone-500">Late:</label>
@@ -441,7 +450,7 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked }) {
             </div>
           )}
 
-          {unlocked && editing && (
+          {unlocked && editing && !selectMode && (
             <EventEditForm event={event} onSave={handleSave} onCancel={() => setEditing(false)} />
           )}
         </div>
@@ -514,6 +523,53 @@ export function TimelinePage({ personFilter = null }) {
   const [pinDraft, setPinDraft]         = useState('')
   const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteEvent)
 
+  const [selectMode,   setSelectMode]   = useState(false)
+  const [selectedIds,  setSelectedIds]  = useState(new Set())
+  const [bulkPerson,   setBulkPerson]   = useState('')
+  const [bulkSaving,   setBulkSaving]   = useState(false)
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false)
+    setSelectedIds(new Set())
+    setBulkPerson('')
+  }
+
+  async function handleBulkApply() {
+    if (!bulkPerson || selectedIds.size === 0) return
+    setBulkSaving(true)
+    try {
+      await Promise.all([...selectedIds].map(id => {
+        const ev = events.find(e => e.id === id)
+        if (!ev) return null
+        const existing = parsePointPersons(ev.point_person)
+        const next = existing.includes(bulkPerson) ? existing : [...existing, bulkPerson]
+        return updateEvent(id, {
+          title: ev.title,
+          start_time: ev.start_time?.slice(0, 5),
+          duration_mins: ev.duration_mins,
+          buffer_mins: ev.buffer_mins,
+          location: ev.location ?? '',
+          category: ev.category ?? 'general',
+          delay_mins: ev.delay_mins ?? 0,
+          notes: ev.notes ?? '',
+          point_person: serializePointPersons(next),
+          locked: ev.locked ?? false,
+        })
+      }))
+      exitSelectMode()
+    } finally {
+      setBulkSaving(false)
+    }
+  }
+
   function handleDeleteEvent(id) {
     const label = events.find(e => e.id === id)?.title ?? 'Event'
     requestDelete(id, label)
@@ -554,6 +610,15 @@ export function TimelinePage({ personFilter = null }) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Day-of Timeline</h2>
+          {unlocked && (
+            <button
+              onClick={() => selectMode ? exitSelectMode() : setSelectMode(true)}
+              title={selectMode ? 'Cancel selection' : 'Select events to bulk-assign'}
+              className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${selectMode ? 'bg-taupe-600 text-white' : 'text-stone-400 dark:text-stone-500 hover:text-taupe-600'}`}
+            >
+              {selectMode ? `${selectedIds.size} selected` : 'Select'}
+            </button>
+          )}
           <button
             onClick={handleLockClick}
             aria-label={unlocked ? 'Lock timeline editing' : 'Unlock timeline editing'}
@@ -696,7 +761,7 @@ export function TimelinePage({ personFilter = null }) {
                   May 29 · Rehearsal
                 </p>
                 {rehearsalEvents.map(ev => (
-                  <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} />
+                  <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} selectMode={selectMode} selected={selectedIds.has(ev.id)} onSelect={() => toggleSelect(ev.id)} />
                 ))}
                 {weddingEvents.length > 0 && (
                   <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 pt-4 pb-1">
@@ -707,12 +772,43 @@ export function TimelinePage({ personFilter = null }) {
             )}
 
             {weddingEvents.map(ev => (
-              <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} />
+              <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} selectMode={selectMode} selected={selectedIds.has(ev.id)} onSelect={() => toggleSelect(ev.id)} />
             ))}
           </div>
         )
       })()}
       {pendingDelete && <UndoToast label={pendingDelete.label} onUndo={undoDelete} />}
+
+      {/* Bulk assign bar */}
+      {selectMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700 shadow-lg">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+            <span className="text-xs text-stone-500 dark:text-stone-400 flex-shrink-0">
+              {selectedIds.size === 0 ? 'Tap events to select' : `${selectedIds.size} event${selectedIds.size !== 1 ? 's' : ''} selected`}
+            </span>
+            <select
+              value={bulkPerson}
+              onChange={e => setBulkPerson(e.target.value)}
+              className="flex-1 min-w-0 text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600"
+            >
+              <option value="">Add point person…</option>
+              {POINT_PERSON_OPTIONS.map(p => (
+                <option key={p} value={p}>{p === 'dj' ? 'DJ' : p === 'mac' ? 'MAC' : p.charAt(0).toUpperCase() + p.slice(1)}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleBulkApply}
+              disabled={bulkSaving || selectedIds.size === 0 || !bulkPerson}
+              className="text-sm bg-taupe-600 text-white px-4 py-1.5 rounded-lg hover:bg-taupe-700 disabled:opacity-40 transition-colors flex-shrink-0"
+            >
+              {bulkSaving ? 'Saving…' : 'Apply'}
+            </button>
+            <button onClick={exitSelectMode} className="text-sm text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 flex-shrink-0">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
