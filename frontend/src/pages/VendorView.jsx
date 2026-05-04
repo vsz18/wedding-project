@@ -14,6 +14,7 @@ const ROLE_META = {
   dj:           { label: 'DJ' },
   photographer: { label: 'Photographer' },
   venue:        { label: 'Venue' },
+  mac:          { label: 'MAC' },
 }
 
 function SunIcon() {
