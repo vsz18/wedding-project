@@ -39,7 +39,7 @@ const FILTERS = [
 
 const CATEGORY_OPTIONS = ['getting_ready','ceremony','cocktail_hour','food','reception','photos','travel','vendor_arrival','rehearsal','general']
 
-const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj','photographer','venue','mac']
+const POINT_PERSON_OPTIONS = ['bride','bridesmaid','groom','family','guest','dj','photographer','venue','mac','scott']
 const POINT_PERSON_COLORS = {
   bride:        'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
   bridesmaid:   'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
@@ -50,6 +50,7 @@ const POINT_PERSON_COLORS = {
   photographer: 'bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300',
   venue:        'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
   mac:          'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-900/50 dark:text-fuchsia-300',
+  scott:        'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
 }
 
 function parseCategories(raw) {
