@@ -9,7 +9,6 @@ const ROLE_META = {
   bride:        { label: 'Bride' },
   bridesmaid:   { label: 'Bridesmaids' },
   groom:        { label: 'Groom' },
-  family:       { label: 'Family' },
   guest:        { label: 'Guests' },
   dj:           { label: 'DJ' },
   photographer: { label: 'Photographer' },
