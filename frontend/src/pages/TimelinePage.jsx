@@ -171,7 +171,7 @@ function PointPersonPicker({ value, onChange }) {
   const label = selected.length === 0
     ? '—'
     : selected.length === 1
-      ? (selected[0] === 'dj' ? 'DJ' : selected[0] === 'mac' ? 'MAC' : selected[0].charAt(0).toUpperCase() + selected[0].slice(1))
+      ? (selected[0] === 'dj' ? 'DJ' : selected[0] === 'mac' ? 'The Aunts' : selected[0].charAt(0).toUpperCase() + selected[0].slice(1))
       : `${selected.length} people`
 
   return (
@@ -192,7 +192,7 @@ function PointPersonPicker({ value, onChange }) {
           {POINT_PERSON_OPTIONS.map(person => (
             <label key={person} className="flex items-center gap-2 px-3 py-2 hover:bg-stone-50 dark:hover:bg-stone-700 cursor-pointer">
               <input type="checkbox" checked={selected.includes(person)} onChange={() => toggle(person)} className="accent-taupe-600 w-3.5 h-3.5" />
-              <span className="text-xs text-stone-700 dark:text-stone-200">{person === 'dj' ? 'DJ' : person === 'mac' ? 'MAC' : person.charAt(0).toUpperCase() + person.slice(1)}</span>
+              <span className="text-xs text-stone-700 dark:text-stone-200">{person === 'dj' ? 'DJ' : person === 'mac' ? 'The Aunts' : person.charAt(0).toUpperCase() + person.slice(1)}</span>
             </label>
           ))}
         </div>
@@ -398,7 +398,7 @@ function EventCard({ event, onSetDelay, onUpdate, onDelete, unlocked, selectMode
             <div className="flex flex-wrap gap-1 mt-1.5">
               {parsePointPersons(event.point_person).map(person => (
                 <span key={person} className={`text-xs px-2 py-0.5 rounded-full font-medium ${POINT_PERSON_COLORS[person] || POINT_PERSON_COLORS.guest}`}>
-                  {person === 'dj' ? 'DJ' : person === 'mac' ? 'MAC' : person.charAt(0).toUpperCase() + person.slice(1)}
+                  {person === 'dj' ? 'DJ' : person === 'mac' ? 'The Aunts' : person.charAt(0).toUpperCase() + person.slice(1)}
                 </span>
               ))}
               {parseCategories(event.category).map(cat => (
@@ -720,7 +720,7 @@ export function TimelinePage({ personFilter = null }) {
         <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">Point Person</p>
         <div className="flex gap-1.5 flex-wrap">
           {['all', ...POINT_PERSON_OPTIONS].map(p => {
-            const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p === 'mac' ? 'MAC' : p.charAt(0).toUpperCase() + p.slice(1)
+            const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p === 'mac' ? 'The Aunts' : p.charAt(0).toUpperCase() + p.slice(1)
             const count = p !== 'all' ? shownEvents.filter(e => parsePointPersons(e.point_person).includes(p)).length : null
             if (p !== 'all' && count === 0) return null
             return (
@@ -794,7 +794,7 @@ export function TimelinePage({ personFilter = null }) {
             >
               <option value="">Add point person…</option>
               {POINT_PERSON_OPTIONS.map(p => (
-                <option key={p} value={p}>{p === 'dj' ? 'DJ' : p === 'mac' ? 'MAC' : p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                <option key={p} value={p}>{p === 'dj' ? 'DJ' : p === 'mac' ? 'The Aunts' : p.charAt(0).toUpperCase() + p.slice(1)}</option>
               ))}
             </select>
             <button

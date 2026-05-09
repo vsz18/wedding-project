@@ -14,7 +14,7 @@ const ROLE_META = {
   dj:           { label: 'DJ' },
   photographer: { label: 'Photographer' },
   venue:        { label: 'Venue' },
-  mac:          { label: 'MAC' },
+  mac:          { label: 'The Aunts' },
   scott:        { label: 'Scott' },
 }
 
