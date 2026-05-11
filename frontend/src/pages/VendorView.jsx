@@ -16,6 +16,7 @@ const ROLE_META = {
   venue:        { label: 'Venue' },
   mac:          { label: 'The Aunts' },
   scott:        { label: 'Scott' },
+  gilmor:       { label: 'Gilmor' },
 }
 
 function SunIcon() {
