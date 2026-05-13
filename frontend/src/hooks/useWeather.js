@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
-const LAT = 40.7128
-const LON = -74.0060
+const LAT = 40.8116
+const LON = -73.9527
 const WEDDING_DATE = '2026-05-30'
 
 // WMO code → { label, icon }
