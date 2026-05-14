@@ -73,6 +73,23 @@ function serializePointPersons(list) {
 
 const INPUT = 'text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600'
 
+function AutoTextarea({ value, onChange, placeholder, className }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    if (ref.current) { ref.current.style.height = 'auto'; ref.current.style.height = ref.current.scrollHeight + 'px' }
+  }, [value])
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      rows={3}
+      className={`${className} resize-none overflow-hidden`}
+    />
+  )
+}
+
 function fmtDuration(mins) {
   if (!mins) return null
   if (mins < 60) return `${mins}m`
@@ -247,7 +264,7 @@ function EventEditForm({ event, onSave, onCancel }) {
         <CategoryPicker value={form.category} onChange={v => set('category', v)} />
         <PointPersonPicker value={form.point_person} onChange={v => set('point_person', v)} />
       </div>
-      <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional)" rows={2} className={`w-full ${INPUT} resize-none`} />
+      <AutoTextarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional)" className={`w-full ${INPUT}`} />
       <label className="flex items-center gap-2 cursor-pointer select-none">
         <input type="checkbox" checked={form.locked} onChange={e => set('locked', e.target.checked)} className="accent-taupe-600 w-3.5 h-3.5" />
         <span className="text-xs text-stone-500 dark:text-stone-400">Lock to scheduled time <span className="text-stone-400 dark:text-stone-500">(ignores ripple)</span></span>
@@ -503,7 +520,7 @@ function AddEventForm({ onAdd }) {
         <CategoryPicker value={form.category} onChange={v => set('category', v)} />
         <PointPersonPicker value={form.point_person} onChange={v => set('point_person', v)} />
       </div>
-      <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional) — e.g. who gives a speech, song for first dance…" rows={2} className={`w-full ${INPUT} resize-none`} />
+      <AutoTextarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Details (optional) — e.g. who gives a speech, song for first dance…" className={`w-full ${INPUT}`} />
       <label className="flex items-center gap-2 cursor-pointer select-none">
         <input type="checkbox" checked={form.locked} onChange={e => set('locked', e.target.checked)} className="accent-taupe-600 w-3.5 h-3.5" />
         <span className="text-xs text-stone-500 dark:text-stone-400">Lock to scheduled time <span className="text-stone-400 dark:text-stone-500">(ignores ripple)</span></span>
