@@ -73,6 +73,66 @@ function serializePointPersons(list) {
 
 const INPUT = 'text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600'
 
+function fmtPerson(p) {
+  if (p === 'dj') return 'DJ'
+  if (p === 'mac') return 'The Aunts'
+  return p.charAt(0).toUpperCase() + p.slice(1)
+}
+
+function printTimeline(events) {
+  const rehearsal = events.filter(e => parseCategories(e.category).includes('rehearsal'))
+  const wedding   = events.filter(e => !parseCategories(e.category).includes('rehearsal'))
+
+  function eventRows(ev) {
+    const persons  = parsePointPersons(ev.point_person).map(fmtPerson).join(', ')
+    const duration = ev.duration_mins ? fmtDuration(ev.duration_mins) : '—'
+    const delay    = ev.incomingDelay ? ` <span class="delay">(${ev.incomingDelay > 0 ? '+' : ''}${ev.incomingDelay}m)</span>` : ''
+    return `
+      <tr class="ev">
+        <td class="time">${ev.effectiveStartDisplay}${delay}</td>
+        <td class="title">${ev.title}${ev.locked ? ' &#128274;' : ''}</td>
+        <td class="loc">${ev.location || ''}</td>
+        <td class="dur">${duration}</td>
+        <td class="who">${persons}</td>
+      </tr>
+      ${ev.notes ? `<tr class="notes"><td colspan="5">${ev.notes}</td></tr>` : ''}`
+  }
+
+  function section(label, evs) {
+    if (!evs.length) return ''
+    return `<tr class="section"><td colspan="5">${label}</td></tr>${evs.map(eventRows).join('')}`
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+  <title>Scott-Zhang Wedding · Timeline</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Georgia,serif;color:#1c1917;font-size:11pt;padding:.75in}
+    h1{font-size:20pt;margin-bottom:3pt}
+    .sub{font-size:10pt;color:#78716c;margin-bottom:20pt}
+    table{width:100%;border-collapse:collapse}
+    .section td{font-family:Arial,sans-serif;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#78716c;padding:14pt 0 3pt;border-bottom:1.5px solid #d6d3d1}
+    .ev td{padding:5pt 8pt 5pt 0;border-bottom:1px solid #f5f5f4;vertical-align:top}
+    .time{font-family:Arial,sans-serif;font-size:9pt;white-space:nowrap;width:90pt;color:#44403c}
+    .delay{color:#f97316}
+    .title{font-weight:700;font-size:10pt;width:170pt}
+    .loc{font-size:9pt;color:#78716c;width:110pt}
+    .dur{font-family:Arial,sans-serif;font-size:9pt;color:#78716c;white-space:nowrap;width:45pt}
+    .who{font-family:Arial,sans-serif;font-size:8.5pt;color:#57534e}
+    .notes td{padding:1pt 0 7pt;font-size:9pt;color:#78716c;font-style:italic;border-bottom:1px solid #f5f5f4}
+    @media print{body{padding:.5in}@page{margin:.5in}}
+  </style></head><body>
+  <h1>Scott-Zhang Wedding</h1>
+  <p class="sub">Day-of Timeline &nbsp;·&nbsp; May 30, 2026 &nbsp;·&nbsp; New York, NY 10027</p>
+  <table>${section('May 29 · Rehearsal', rehearsal)}${section('May 30 · Wedding Day', wedding)}</table>
+  <script>window.onload=()=>window.print()</script>
+  </body></html>`
+
+  const w = window.open('', '_blank')
+  w.document.write(html)
+  w.document.close()
+}
+
 function AutoTextarea({ value, onChange, placeholder, className }) {
   const ref = useRef(null)
   useEffect(() => {
@@ -658,11 +718,22 @@ export function TimelinePage({ personFilter = null }) {
             )}
           </button>
         </div>
-        <div className="flex gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs">
           {delayed  > 0 && <span className="px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 rounded-full font-medium">{delayed} ripple{delayed > 1 ? 's' : ''}</span>}
           {buffered > 0 && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300 rounded-full font-medium">{buffered} buffered</span>}
           {early    > 0 && <span className="px-2 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-full font-medium">{early} ahead</span>}
           {delayed === 0 && buffered === 0 && early === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded-full font-medium">On schedule</span>}
+          {!selectMode && shownEvents.length > 0 && (
+            <button
+              onClick={() => printTimeline(shownEvents)}
+              title="Download PDF"
+              className="p-1.5 rounded-md text-stone-400 dark:text-stone-500 hover:text-taupe-600 dark:hover:text-taupe-400 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
