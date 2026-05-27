@@ -8,11 +8,11 @@ const TABLES = [
   { number: 3,  guests: ['Doris Zhang', 'Michael Zhang', 'Adrian Zhang', 'Brett Zhang', 'Craig Zhang', 'Katie Zhang', 'Ray Zhang', 'Diana Zhang', 'Steven Zhang', 'Eric Zhang'] },
   { number: 4,  guests: ['Janet Gilmor', 'Rob III Gilmor', 'Chris Gilmor', 'Susan Gilmor', 'Lisa Meyer', 'Lisa Jamison', 'Todd Jamison', 'Clay Jamison', 'Rob Gilmor IV', 'Natalie Gilmor', 'Robbie Gilmor'] },
   { number: 5,  guests: ['Sylvie Errickson', 'Cal Jenkins', 'Jasmine Biggs', 'Sy Jenkins', 'Gabriel Rosa', 'Nabai Hatemariam', 'Jenn Mao', 'Kyle Devine', 'Rio Mizuno', 'Henry Chow'] },
-  { number: 6,  guests: ['Xiaomin Wang', 'Xiaolin Wang', 'Xiaowei Wang', 'Karen Zhang', 'Charles Bowers', 'Knar Abrahaymyan', 'Gaia Marchisio', 'Riccardo Brusco', 'Dan Wang', 'Mrs Wang'] },
+  { number: 6,  guests: ['Xiaomin Wang', 'Xiaolin Wang', 'Xiaowei Wang', 'Karen Zhang', 'Charles Bowers', 'Dan Wang', 'Mrs Wang', 'Jamie Martin', 'Erin Frey', 'Carolyn Fu', 'Siffrien Diana', 'Ryan Geiser'] },
   { number: 7,  guests: ['KA Prophete', 'Paul Lee', 'Jasmine Qin', 'Sarah Park', 'Jason Han', 'Ariel Reyes', 'Fatemeh Bahari', 'David Dopfel', 'Julia Jones', 'Nelson Wu'] },
   { number: 8,  guests: ['Timothy Tabor', 'Akiko Tabor', 'Mrs. Sweeney', 'Mr. Sweeney', 'John Hefferon', 'Joy Cunningham', 'Adina Sterling', 'Elvin Sterling', 'Malia Mason', 'David Katch'] },
   { number: 9,  guests: ['Adam Hendrix', 'Zoe Tu', 'Madelyn Baron', 'Carl Lindquist', 'Jeffry Diament', 'John DiVittorio', 'G. Gray Cornelius', 'Lisa Shen', 'Zi-Xiang Shen', 'Kyle Smith'] },
-  { number: 10, guests: ['Yi Gu', 'Thomas Safran', 'Patrico Almeida', 'Alexandra Strick', 'Andrew Gates', 'Jonathan Kaufman', 'Mohamed Hussein', 'Siffrien Diana', 'Ryan Geiser', 'Keila Farag', 'Hady Farag', 'Carolyn Fu'] },
+  { number: 10, guests: ['Yi Gu', 'Thomas Safran', 'Patrico Almeida', 'Alexandra Strick', 'Andrew Gates', 'Jonathan Kaufman', 'Mohamed Hussein', 'Keila Farag', 'Hady Farag', 'Knar Abrahaymyan'] },
   { number: 11, guests: ['Tasha Brown', 'Austin Addison', 'Samantha Past', 'Kristy Yeung', 'Avery Tamakloe', 'Brandon McGhee', 'Richard Freeman', 'Jeremy Burton', 'Anyssa Chebbi', 'Zika Masmoudi'] },
   { number: 12, guests: ['Allison Sweeney', 'Kristen Kyreakakis', 'Erich Schimpf', 'Chloe Ryan', 'Kevin Wachter', 'Campbell Shea', 'Barett Shea', 'Hilary Shea', 'Stewart Hoffmann'] },
 ]
