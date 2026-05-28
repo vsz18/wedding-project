@@ -21,6 +21,7 @@ export function SeatingPage() {
   const { unlocked, unlock, error: pinError, clearError } = useTimelineAuth()
   const [pinDraft, setPinDraft] = useState('')
   const [search, setSearch]     = useState('')
+  const [view, setView]         = useState('tables')
 
   function handlePinSubmit(e) {
     e.preventDefault()
@@ -56,17 +57,33 @@ export function SeatingPage() {
   }
 
   const q = search.trim().toLowerCase()
-  const matchedGuest = q
-    ? TABLES.flatMap(t => t.guests.map(g => ({ guest: g, table: t.number }))).find(({ guest }) => guest.toLowerCase().includes(q))
-    : null
+  const allGuests = TABLES.flatMap(t => t.guests.map(g => ({ guest: g, table: t.number })))
+  const matchedGuest = q ? allGuests.find(({ guest }) => guest.toLowerCase().includes(q)) : null
+  const sortedGuests = [...allGuests].sort((a, b) => a.guest.localeCompare(b.guest))
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Seating Chart</h2>
-        <span className="text-xs text-stone-400 dark:text-stone-500">
-          {TABLES.reduce((n, t) => n + t.guests.length, 0)} guests · {TABLES.length} tables
-        </span>
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-lg overflow-hidden border border-stone-200 dark:border-stone-600 text-xs font-medium">
+            <button
+              onClick={() => setView('tables')}
+              className={`px-3 py-1.5 transition-colors ${view === 'tables' ? 'bg-taupe-600 text-white' : 'text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
+            >
+              By Table
+            </button>
+            <button
+              onClick={() => setView('alpha')}
+              className={`px-3 py-1.5 transition-colors ${view === 'alpha' ? 'bg-taupe-600 text-white' : 'text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
+            >
+              A–Z
+            </button>
+          </div>
+          <span className="text-xs text-stone-400 dark:text-stone-500">
+            {TABLES.reduce((n, t) => n + t.guests.length, 0)} guests
+          </span>
+        </div>
       </div>
 
       <div className="relative mb-4">
@@ -91,35 +108,52 @@ export function SeatingPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {TABLES.map(table => {
-          const highlight = q && table.guests.some(g => g.toLowerCase().includes(q))
-          return (
-            <div
-              key={table.number}
-              className={`bg-white dark:bg-stone-800 rounded-xl shadow-sm p-4 transition-all ${highlight ? 'ring-2 ring-taupe-600' : ''}`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-serif text-lg text-stone-700 dark:text-stone-200">
-                  {table.number === 'Sweetheart' ? 'Sweetheart Table' : `Table ${table.number}`}
-                </span>
-                <span className="text-xs text-stone-400 dark:text-stone-500">{table.guests.length}</span>
+      {view === 'tables' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {TABLES.map(table => {
+            const highlight = q && table.guests.some(g => g.toLowerCase().includes(q))
+            return (
+              <div
+                key={table.number}
+                className={`bg-white dark:bg-stone-800 rounded-xl shadow-sm p-4 transition-all ${highlight ? 'ring-2 ring-taupe-600' : ''}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-serif text-lg text-stone-700 dark:text-stone-200">
+                    {table.number === 'Sweetheart' ? 'Sweetheart Table' : `Table ${table.number}`}
+                  </span>
+                  <span className="text-xs text-stone-400 dark:text-stone-500">{table.guests.length}</span>
+                </div>
+                <ul className="space-y-0.5">
+                  {table.guests.map(guest => (
+                    <li key={guest} className={`text-xs ${
+                      q && guest.toLowerCase().includes(q)
+                        ? 'font-semibold text-taupe-700 dark:text-taupe-400'
+                        : 'text-stone-500 dark:text-stone-400'
+                    }`}>
+                      {guest}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-0.5">
-                {table.guests.map(guest => (
-                  <li key={guest} className={`text-xs ${
-                    q && guest.toLowerCase().includes(q)
-                      ? 'font-semibold text-taupe-700 dark:text-taupe-400'
-                      : 'text-stone-500 dark:text-stone-400'
-                  }`}>
-                    {guest}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-stone-800 rounded-xl shadow-sm divide-y divide-stone-100 dark:divide-stone-700">
+          {sortedGuests
+            .filter(({ guest }) => !q || guest.toLowerCase().includes(q))
+            .map(({ guest, table }) => (
+              <div key={guest} className={`flex items-center justify-between px-4 py-2.5 ${q && guest.toLowerCase().includes(q) ? 'bg-taupe-50 dark:bg-stone-700/50' : ''}`}>
+                <span className={`text-sm ${q && guest.toLowerCase().includes(q) ? 'font-semibold text-taupe-700 dark:text-taupe-400' : 'text-stone-700 dark:text-stone-200'}`}>
+                  {guest}
+                </span>
+                <span className="text-xs text-stone-400 dark:text-stone-500 ml-4 flex-shrink-0">
+                  {table === 'Sweetheart' ? 'Sweetheart' : `Table ${table}`}
+                </span>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   )
 }
