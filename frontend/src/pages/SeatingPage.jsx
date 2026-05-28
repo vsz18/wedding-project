@@ -59,7 +59,8 @@ export function SeatingPage() {
   const q = search.trim().toLowerCase()
   const allGuests = TABLES.flatMap(t => t.guests.map(g => ({ guest: g, table: t.number })))
   const matchedGuest = q ? allGuests.find(({ guest }) => guest.toLowerCase().includes(q)) : null
-  const sortedGuests = [...allGuests].sort((a, b) => a.guest.localeCompare(b.guest))
+  const lastName = name => name.split(' ').slice(-1)[0]
+  const sortedGuests = [...allGuests].sort((a, b) => lastName(a.guest).localeCompare(lastName(b.guest)))
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
