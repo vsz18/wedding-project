@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useTimelineAuth } from '../hooks/useTimelineAuth.js'
 
 const TABLES = [
   { number: 'Sweetheart', guests: ['Victoria Z', 'Alan Z'] },
@@ -18,43 +17,8 @@ const TABLES = [
 ]
 
 export function SeatingPage() {
-  const { unlocked, unlock, error: pinError, clearError } = useTimelineAuth()
-  const [pinDraft, setPinDraft] = useState('')
-  const [search, setSearch]     = useState('')
-  const [view, setView]         = useState('tables')
-
-  function handlePinSubmit(e) {
-    e.preventDefault()
-    unlock(pinDraft)
-  }
-
-  if (!unlocked) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-16 flex flex-col items-center gap-4 text-center">
-        <svg className="w-8 h-8 text-stone-300 dark:text-stone-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <rect x="3" y="11" width="18" height="11" rx="2" />
-          <path strokeLinecap="round" d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        <p className="text-sm text-stone-400 dark:text-stone-500">Enter your PIN to view the seating chart</p>
-        <form onSubmit={handlePinSubmit} className="flex items-center gap-2">
-          <input
-            type="password"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={pinDraft}
-            onChange={e => { setPinDraft(e.target.value); clearError() }}
-            placeholder="PIN"
-            autoFocus
-            className="w-32 text-sm text-center border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600"
-          />
-          <button type="submit" className="text-sm bg-taupe-600 text-white px-4 py-1.5 rounded-lg hover:bg-taupe-700 transition-colors">
-            Unlock
-          </button>
-        </form>
-        {pinError && <p className="text-xs text-red-400">Incorrect PIN</p>}
-      </div>
-    )
-  }
+  const [search, setSearch] = useState('')
+  const [view, setView]     = useState('tables')
 
   const q = search.trim().toLowerCase()
   const allGuests = TABLES.flatMap(t => t.guests.map(g => ({ guest: g, table: t.number })))

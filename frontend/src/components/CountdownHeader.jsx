@@ -1,24 +1,15 @@
-import { WeatherWidget } from './WeatherWidget.jsx'
-
-/** @param {{ daysRemaining: number, dayOfMode: boolean }} props */
-export function CountdownHeader({ daysRemaining, dayOfMode }) {
+export function CountdownHeader() {
   return (
-    <div className={`text-center py-8 sm:py-10 px-4 transition-colors ${dayOfMode ? 'bg-taupe-50 dark:bg-stone-800' : ''}`}>
-      {dayOfMode && (
-        <div className="text-xs font-semibold uppercase tracking-widest text-taupe-600 mb-3">
-          Day Of
-        </div>
-      )}
-      <div className="font-serif text-6xl sm:text-8xl font-medium text-stone-800 dark:text-stone-100 leading-none tabular-nums">
-        {daysRemaining}
+    <div className="text-center py-8 sm:py-10 px-4">
+      <div className="font-serif text-5xl sm:text-7xl font-medium text-stone-800 dark:text-stone-100 leading-none">
+        Married!
       </div>
-      <div className="mt-2 text-stone-500 dark:text-stone-400 text-sm uppercase tracking-widest font-medium">
-        {daysRemaining === 1 ? 'day' : 'days'} until the Scott-Zhang wedding
+      <div className="mt-3 text-stone-500 dark:text-stone-400 text-sm uppercase tracking-widest font-medium">
+        Scott-Zhang Wedding
       </div>
-      <div className="mt-4 text-taupe-600 text-sm">
-        May 30, 2026
+      <div className="mt-2 text-taupe-600 text-sm">
+        May 30, 2026 · New York, NY
       </div>
-      <WeatherWidget />
     </div>
   )
 }

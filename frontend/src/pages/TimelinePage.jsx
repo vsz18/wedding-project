@@ -1,8 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTimeline } from '../hooks/useTimeline.js'
-import { useTimelineAuth } from '../hooks/useTimelineAuth.js'
-import { useDeleteUndo } from '../hooks/useDeleteUndo.js'
-import { UndoToast } from '../components/UndoToast.jsx'
 
 const CATEGORY_COLORS = {
   getting_ready:  'bg-pink-50 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
@@ -594,172 +591,33 @@ function AddEventForm({ onAdd }) {
 }
 
 export function TimelinePage({ personFilter = null }) {
-  const { events, loading, error, setDelay, updateEvent, addEvent, deleteEvent } = useTimeline()
-  const { unlocked, unlock, lock, error: pinError, clearError } = useTimelineAuth()
+  const { events, loading, error } = useTimeline()
   const [activeFilter, setActiveFilter] = useState('all')
   const [activePerson, setActivePerson] = useState(personFilter || 'all')
   const [searchQuery, setSearchQuery]   = useState('')
-  const [showPinInput, setShowPinInput] = useState(false)
-  const [pinDraft, setPinDraft]         = useState('')
-  const { hiddenIds, pendingDelete, requestDelete, undoDelete } = useDeleteUndo(deleteEvent)
-
-  const [selectMode,   setSelectMode]   = useState(false)
-  const [selectedIds,  setSelectedIds]  = useState(new Set())
-  const [bulkPerson,   setBulkPerson]   = useState('')
-  const [bulkSaving,   setBulkSaving]   = useState(false)
-
-  function toggleSelect(id) {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
-  function exitSelectMode() {
-    setSelectMode(false)
-    setSelectedIds(new Set())
-    setBulkPerson('')
-  }
-
-  async function handleBulkApply() {
-    if (!bulkPerson || selectedIds.size === 0) return
-    setBulkSaving(true)
-    try {
-      await Promise.all([...selectedIds].map(id => {
-        const ev = events.find(e => e.id === id)
-        if (!ev) return null
-        const existing = parsePointPersons(ev.point_person)
-        const next = existing.includes(bulkPerson) ? existing : [...existing, bulkPerson]
-        return updateEvent(id, {
-          title: ev.title,
-          start_time: ev.start_time?.slice(0, 5),
-          duration_mins: ev.duration_mins,
-          buffer_mins: ev.buffer_mins,
-          location: ev.location ?? '',
-          category: ev.category ?? 'general',
-          delay_mins: ev.delay_mins ?? 0,
-          notes: ev.notes ?? '',
-          point_person: serializePointPersons(next),
-          locked: ev.locked ?? false,
-        })
-      }))
-      exitSelectMode()
-    } finally {
-      setBulkSaving(false)
-    }
-  }
-
-  function handleDeleteEvent(id) {
-    const label = events.find(e => e.id === id)?.title ?? 'Event'
-    requestDelete(id, label)
-  }
-
-  function handleLockClick() {
-    if (unlocked) {
-      lock()
-      setShowPinInput(false)
-    } else {
-      setShowPinInput(p => !p)
-      setPinDraft('')
-      clearError()
-    }
-  }
-
-  function handlePinSubmit(e) {
-    e.preventDefault()
-    if (unlock(pinDraft)) {
-      setShowPinInput(false)
-      setPinDraft('')
-    }
-  }
-
-  const shownEvents   = events.filter(e => !hiddenIds.has(e.id))
-  const delayed  = shownEvents.filter(e => e.status === 'delayed').length
-  const buffered = shownEvents.filter(e => e.status === 'buffered').length
-  const early    = shownEvents.filter(e => e.status === 'early').length
 
   const q = searchQuery.trim().toLowerCase()
-  const visibleEvents = shownEvents
+  const visibleEvents = events
     .filter(e => activeFilter === 'all' || parseCategories(e.category).includes(activeFilter))
     .filter(e => activePerson === 'all' || parsePointPersons(e.point_person).includes(activePerson))
     .filter(e => !q || e.title.toLowerCase().includes(q) || (e.location ?? '').toLowerCase().includes(q) || (e.notes ?? '').toLowerCase().includes(q))
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Day-of Timeline</h2>
-          {unlocked && (
-            <button
-              onClick={() => selectMode ? exitSelectMode() : setSelectMode(true)}
-              title={selectMode ? 'Cancel selection' : 'Select events to bulk-assign'}
-              className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${selectMode ? 'bg-taupe-600 text-white' : 'text-stone-400 dark:text-stone-500 hover:text-taupe-600'}`}
-            >
-              {selectMode ? `${selectedIds.size} selected` : 'Select'}
-            </button>
-          )}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif text-2xl text-stone-800 dark:text-stone-100">Day-of Timeline</h2>
+        {events.length > 0 && (
           <button
-            onClick={handleLockClick}
-            aria-label={unlocked ? 'Lock timeline editing' : 'Unlock timeline editing'}
-            title={unlocked ? 'Lock editing' : 'Unlock to edit'}
-            className={`transition-colors ${unlocked ? 'text-taupe-600 hover:text-taupe-700' : 'text-stone-300 dark:text-stone-600 hover:text-stone-500 dark:hover:text-stone-400'}`}
+            onClick={() => printTimeline(events)}
+            title="Download PDF"
+            className="p-1.5 rounded-md text-stone-400 dark:text-stone-500 hover:text-taupe-600 dark:hover:text-taupe-400 transition-colors"
           >
-            {unlocked ? (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth={1.8}>
-                <rect x="3" y="9" width="14" height="9" rx="2" />
-                <path strokeLinecap="round" d="M7 9V6a3 3 0 0 1 6 0" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth={1.8}>
-                <rect x="3" y="9" width="14" height="9" rx="2" />
-                <path strokeLinecap="round" d="M7 9V6a3 3 0 0 1 6 0v3" />
-              </svg>
-            )}
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
+            </svg>
           </button>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          {delayed  > 0 && <span className="px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 rounded-full font-medium">{delayed} ripple{delayed > 1 ? 's' : ''}</span>}
-          {buffered > 0 && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300 rounded-full font-medium">{buffered} buffered</span>}
-          {early    > 0 && <span className="px-2 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-full font-medium">{early} ahead</span>}
-          {delayed === 0 && buffered === 0 && early === 0 && shownEvents.length > 0 && <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded-full font-medium">On schedule</span>}
-          {!selectMode && shownEvents.length > 0 && (
-            <button
-              onClick={() => printTimeline(shownEvents)}
-              title="Download PDF"
-              className="p-1.5 rounded-md text-stone-400 dark:text-stone-500 hover:text-taupe-600 dark:hover:text-taupe-400 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
-              </svg>
-            </button>
-          )}
-        </div>
+        )}
       </div>
-
-      {/* PIN input */}
-      {!unlocked && showPinInput && (
-        <form onSubmit={handlePinSubmit} className="flex items-center gap-2 mb-3">
-          <input
-            type="password"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={pinDraft}
-            onChange={e => { setPinDraft(e.target.value); clearError() }}
-            placeholder="Enter PIN"
-            autoFocus
-            className="w-32 text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600"
-          />
-          <button type="submit" className="text-sm bg-taupe-600 text-white px-3 py-1.5 rounded-lg hover:bg-taupe-700 transition-colors">
-            Unlock
-          </button>
-          {pinError && <span className="text-xs text-red-400">Incorrect PIN</span>}
-        </form>
-      )}
-
-      <p className="text-xs text-stone-400 dark:text-stone-500 mb-3">
-        {unlocked ? 'Tap the pencil icon to edit an event or set delays. Ripple shows downstream impact.' : 'View-only — tap the lock icon to edit.'}
-      </p>
 
       {/* Search */}
       <div className="relative mb-4">
@@ -781,7 +639,7 @@ export function TimelinePage({ personFilter = null }) {
         <div className="flex gap-1.5 flex-wrap">
           {FILTERS.map(f => {
             const count = f.id !== 'all'
-              ? shownEvents
+              ? events
                   .filter(e => !personFilter || parsePointPersons(e.point_person).includes(personFilter))
                   .filter(e => parseCategories(e.category).includes(f.id))
                   .length
@@ -805,31 +663,33 @@ export function TimelinePage({ personFilter = null }) {
         </div>
       </div>
 
-      {/* Point person filter — hidden when a role is pre-set via personFilter */}
-      {!personFilter && <div className="mb-5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">Point Person</p>
-        <div className="flex gap-1.5 flex-wrap">
-          {['all', ...POINT_PERSON_OPTIONS].map(p => {
-            const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p === 'mac' ? 'The Aunts' : p.charAt(0).toUpperCase() + p.slice(1)
-            const count = p !== 'all' ? shownEvents.filter(e => parsePointPersons(e.point_person).includes(p)).length : null
-            if (p !== 'all' && count === 0) return null
-            return (
-              <button
-                key={p}
-                onClick={() => setActivePerson(p)}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-                  activePerson === p
-                    ? 'bg-stone-600 text-white dark:bg-stone-400 dark:text-stone-900'
-                    : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
-                }`}
-              >
-                {label}
-                {count !== null && <span className="ml-1.5 opacity-60">{count}</span>}
-              </button>
-            )
-          })}
+      {/* Point person filter */}
+      {!personFilter && (
+        <div className="mb-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">Point Person</p>
+          <div className="flex gap-1.5 flex-wrap">
+            {['all', ...POINT_PERSON_OPTIONS].map(p => {
+              const label = p === 'all' ? 'Everyone' : p === 'dj' ? 'DJ' : p === 'mac' ? 'The Aunts' : p.charAt(0).toUpperCase() + p.slice(1)
+              const count = p !== 'all' ? events.filter(e => parsePointPersons(e.point_person).includes(p)).length : null
+              if (p !== 'all' && count === 0) return null
+              return (
+                <button
+                  key={p}
+                  onClick={() => setActivePerson(p)}
+                  className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                    activePerson === p
+                      ? 'bg-stone-600 text-white dark:bg-stone-400 dark:text-stone-900'
+                      : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
+                  }`}
+                >
+                  {label}
+                  {count !== null && <span className="ml-1.5 opacity-60">{count}</span>}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>}
+      )}
 
       {loading && <p className="text-sm text-stone-400 text-center py-8">Loading timeline…</p>}
       {error   && <p className="text-sm text-red-400 text-center py-8">{error}</p>}
@@ -838,68 +698,24 @@ export function TimelinePage({ personFilter = null }) {
         const rehearsalEvents = visibleEvents.filter(e => parseCategories(e.category).includes('rehearsal'))
         const weddingEvents   = visibleEvents.filter(e => !parseCategories(e.category).includes('rehearsal'))
         const hasRehearsal    = rehearsalEvents.length > 0
-
         return (
           <div className="space-y-2">
-            {activeFilter === 'all' && unlocked && <AddEventForm onAdd={addEvent} />}
             {visibleEvents.length === 0 && (
               <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No events match these filters.</p>
             )}
-
             {hasRehearsal && (
               <>
-                <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 pt-2 pb-1">
-                  May 29 · Rehearsal
-                </p>
-                {rehearsalEvents.map(ev => (
-                  <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} selectMode={selectMode} selected={selectedIds.has(ev.id)} onSelect={() => toggleSelect(ev.id)} />
-                ))}
+                <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 pt-2 pb-1">May 29 · Rehearsal</p>
+                {rehearsalEvents.map(ev => <EventCard key={ev.id} event={ev} unlocked={false} />)}
                 {weddingEvents.length > 0 && (
-                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 pt-4 pb-1">
-                    May 30 · Wedding Day
-                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 pt-4 pb-1">May 30 · Wedding Day</p>
                 )}
               </>
             )}
-
-            {weddingEvents.map(ev => (
-              <EventCard key={ev.id} event={ev} onSetDelay={setDelay} onUpdate={updateEvent} onDelete={handleDeleteEvent} unlocked={unlocked} selectMode={selectMode} selected={selectedIds.has(ev.id)} onSelect={() => toggleSelect(ev.id)} />
-            ))}
+            {weddingEvents.map(ev => <EventCard key={ev.id} event={ev} unlocked={false} />)}
           </div>
         )
       })()}
-      {pendingDelete && <UndoToast label={pendingDelete.label} onUndo={undoDelete} />}
-
-      {/* Bulk assign bar */}
-      {selectMode && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700 shadow-lg">
-          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-            <span className="text-xs text-stone-500 dark:text-stone-400 flex-shrink-0">
-              {selectedIds.size === 0 ? 'Tap events to select' : `${selectedIds.size} event${selectedIds.size !== 1 ? 's' : ''} selected`}
-            </span>
-            <select
-              value={bulkPerson}
-              onChange={e => setBulkPerson(e.target.value)}
-              className="flex-1 min-w-0 text-sm border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 dark:text-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-taupe-600"
-            >
-              <option value="">Add point person…</option>
-              {POINT_PERSON_OPTIONS.map(p => (
-                <option key={p} value={p}>{p === 'dj' ? 'DJ' : p === 'mac' ? 'The Aunts' : p.charAt(0).toUpperCase() + p.slice(1)}</option>
-              ))}
-            </select>
-            <button
-              onClick={handleBulkApply}
-              disabled={bulkSaving || selectedIds.size === 0 || !bulkPerson}
-              className="text-sm bg-taupe-600 text-white px-4 py-1.5 rounded-lg hover:bg-taupe-700 disabled:opacity-40 transition-colors flex-shrink-0"
-            >
-              {bulkSaving ? 'Saving…' : 'Apply'}
-            </button>
-            <button onClick={exitSelectMode} className="text-sm text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 flex-shrink-0">
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
