@@ -21,12 +21,12 @@ const ROLE_COLORS = {
 const ROLE_LABELS = { bride: 'Bride', moh: 'MOH', bridesmaid: 'Bridesmaid' }
 
 const BRIDESMAIDS = [
-  'Ashley Reed', 'Anyssa Chebbi', 'Margaret Li',
-  'Ayushi Sinha', 'Katherine Herbout', 'Valerie Wilson',
+  'Ashley', 'Anyssa', 'Margaret',
+  'Ayushi', 'Katherine', 'Valerie',
 ]
 
 const MEMBER_ROLE_COLORS = {
-  'Katherine Herbout': 'bg-[#d0dfc8] text-[#3a5c30] dark:bg-green-900/50 dark:text-green-300',
+  'Katherine': 'bg-[#d0dfc8] text-[#3a5c30] dark:bg-green-900/50 dark:text-green-300',
 }
 
 function parseAssignees(raw) {
